@@ -1,4 +1,4 @@
-package ciee
+package check_if_email_exist
 
 type Availability string
 

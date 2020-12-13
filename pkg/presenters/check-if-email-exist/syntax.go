@@ -1,4 +1,4 @@
-package ciee
+package check_if_email_exist
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"

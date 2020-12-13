@@ -1,4 +1,4 @@
-package ciee
+package check_if_email_exist
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
@@ -16,7 +16,7 @@ func (s MXProcessor) CanProcess(_ email.EmailAddressInterface, result ev.Validat
 	return result.ValidatorName() == ev.MXValidatorName
 }
 
-func (s MXProcessor) Process(email email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (s MXProcessor) Process(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
 	mxResult := result.(ev.MXValidationResultInterface)
 	lenMX := len(mxResult.MX())
 	records := make([]string, lenMX)

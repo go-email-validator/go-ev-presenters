@@ -1,4 +1,4 @@
-package ciee
+package check_if_email_exist
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
@@ -15,6 +15,6 @@ func (s RoleProcessor) CanProcess(_ email.EmailAddressInterface, result ev.Valid
 	return result.ValidatorName() == ev.RoleValidatorName
 }
 
-func (s RoleProcessor) Process(email email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (s RoleProcessor) Process(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
 	return RolePresenter{result.IsValid()}
 }
