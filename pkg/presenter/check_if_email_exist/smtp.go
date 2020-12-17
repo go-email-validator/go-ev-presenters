@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type SMTPPresenter struct {
+type smtpPresenter struct {
 	CanConnectSmtp bool `json:"can_connect_smtp"`
 	HasFullInbox   bool `json:"has_full_inbox"`
 	IsCatchAll     bool `json:"is_catch_all"`
@@ -16,17 +16,17 @@ type SMTPPresenter struct {
 	IsDisabled     bool `json:"is_disabled"`
 }
 
-var SuccessSMTPPresenter = SMTPPresenter{true, false, true, true, false}
-var FalseSMTPPresenter = SMTPPresenter{false, false, false, false, false}
+var SuccessSMTPPresenter = smtpPresenter{true, false, false, true, false}
+var FalseSMTPPresenter = smtpPresenter{false, false, false, false, false}
 
-type SMTPProcessor struct{}
+type SMTPPreparer struct{}
 
-func (s SMTPProcessor) CanProcess(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (s SMTPPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
 	return result.ValidatorName() == ev.SMTPValidatorName
 }
 
-func (s SMTPProcessor) Process(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
-	var presenter = SMTPPresenter{}
+func (s SMTPPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+	var presenter = smtpPresenter{}
 	var smtpError smtp_checker.SMTPError
 	var errString string
 	var ok bool
@@ -61,5 +61,5 @@ func (s SMTPProcessor) Process(_ email.EmailAddressInterface, result ev.Validati
 	}
 
 	mergo.Merge(&presenter, SuccessSMTPPresenter)
-	return result
+	return presenter
 }

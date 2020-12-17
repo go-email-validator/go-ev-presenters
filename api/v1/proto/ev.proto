@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package github.com.go_email_validator.go_ev_presenters.api.v1;
+option go_package = "github.com/go-email-validator/go-ev-presenter/pkg/api/v1";
+
+import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/result.proto";
+import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/result.proto";
+
+
+
+service EmailValidation {
+  rpc singleValidation(EmailRequest) returns (EmailResponse) {}
+}
+
+message EmailRequest {
+  string email = 1;
+  ResultType result_type = 2;
+}
+
+message EmailResponse {
+  oneof result {
+    github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.Result check_if_email_exist = 1;
+    github.com.go_email_validator.go_ev_presenters.pkg.presenters.mailboxvalidator.Result mail_box_validator = 2;
+  }
+}
+
+enum ResultType {
+  option allow_alias = true;
+  CHECK_IF_EMAIL_EXIST = 0;
+  CIEE = 0;
+  MAILBOXVALIDATOR = 1;
+  MAIL_BOX_VALIDATOR = 1;
+  MBV = 1;
+}

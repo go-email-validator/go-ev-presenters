@@ -1,16 +1,20 @@
 package check_if_email_exist
 
-type Availability string
+type availability string
+
+func (a availability) String() string {
+	return string(a)
+}
 
 const (
-	Risky   Availability = "risky"
-	Invalid Availability = "invalid"
-	Safe    Availability = "safe"
-	Unknown Availability = "unknown"
+	Risky   availability = "risky"
+	Invalid availability = "invalid"
+	Safe    availability = "safe"
+	Unknown availability = "unknown"
 )
 
-func CalculateAvailability(depPresenter DepPresenter) Availability {
-	if depPresenter.SMTP == FalseSMTPPresenter {
+func calculateAvailability(depPresenter DepPresenter) availability {
+	if depPresenter.SMTP != FalseSMTPPresenter {
 		if depPresenter.Misc.IsDisposable ||
 			depPresenter.Misc.IsRoleAccount ||
 			depPresenter.SMTP.IsCatchAll ||

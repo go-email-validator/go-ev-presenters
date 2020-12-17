@@ -5,18 +5,18 @@ import (
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 )
 
-type MXPresenter struct {
+type mxPresenter struct {
 	AcceptsMail bool     `json:"accepts_mail"`
 	Records     []string `json:"records"`
 }
 
-type MXProcessor struct{}
+type mxPreparer struct{}
 
-func (s MXProcessor) CanProcess(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (s mxPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
 	return result.ValidatorName() == ev.MXValidatorName
 }
 
-func (s MXProcessor) Process(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (s mxPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
 	mxResult := result.(ev.MXValidationResultInterface)
 	lenMX := len(mxResult.MX())
 	records := make([]string, lenMX)
@@ -25,7 +25,7 @@ func (s MXProcessor) Process(_ email.EmailAddressInterface, result ev.Validation
 		records[i] = mx.Host
 	}
 
-	return MXPresenter{
+	return mxPresenter{
 		lenMX > 0,
 		records,
 	}

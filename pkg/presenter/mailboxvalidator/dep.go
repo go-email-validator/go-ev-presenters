@@ -1,6 +1,8 @@
 package mailboxvalidator
 
 const (
+	Name = "MailBoxValidator"
+
 	MissingParameter    = 100
 	ApiKeyNotFound      = MissingParameter + iota
 	ApiKeyDisabled      = MissingParameter + iota
@@ -8,6 +10,10 @@ const (
 	InsufficientCredits = MissingParameter + iota
 	UnknownError        = MissingParameter + iota
 )
+
+func NewDepPreparer() DepPresenter {
+	panic("not implemented")
+}
 
 type DepPresenter struct {
 	EmailAddress          string `json:"email_address"`
@@ -27,7 +33,7 @@ type DepPresenter struct {
 	MailboxvalidatorScore string `json:"mailboxvalidator_score"`
 	TimeTaken             string `json:"time_taken"`
 	Status                string `json:"status"`
-	CreditsAvailable      string `json:"credits_available"`
+	CreditsAvailable      uint32 `json:"credits_available"`
 	ErrorCode             string `json:"error_code"`
 	ErrorMessage          string `json:"error_message"`
 }

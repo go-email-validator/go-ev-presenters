@@ -5,20 +5,20 @@ import (
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 )
 
-type SyntaxPresenter struct {
+type syntaxPresenter struct {
 	Username      string `json:"username"`
 	Domain        string `json:"domain"`
 	IsValidSyntax bool   `json:"is_valid_syntax"`
 }
 
-type SyntaxProcessor struct{}
+type SyntaxPreparer struct{}
 
-func (s SyntaxProcessor) CanProcess(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (s SyntaxPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
 	return result.ValidatorName() == ev.SyntaxValidatorName
 }
 
-func (s SyntaxProcessor) Process(email email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
-	return SyntaxPresenter{
+func (s SyntaxPreparer) Prepare(email email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+	return syntaxPresenter{
 		email.Username(),
 		email.Domain(),
 		result.IsValid(),
