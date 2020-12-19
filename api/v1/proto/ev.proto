@@ -1,15 +1,22 @@
 syntax = "proto3";
 
 package github.com.go_email_validator.go_ev_presenters.api.v1;
-option go_package = "github.com/go-email-validator/go-ev-presenter/pkg/api/v1";
+option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1";
 
 import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/result.proto";
 import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/result.proto";
-
-
+import "google/api/annotations.proto";
 
 service EmailValidation {
-  rpc singleValidation(EmailRequest) returns (EmailResponse) {}
+  rpc singleValidation(EmailRequest) returns (EmailResponse) {
+    option (google.api.http) = {
+      post: "/v1/validation/single"
+      body: "*"
+      additional_bindings {
+        get: "/v1/validation/single/{email}"
+      }
+    };
+  }
 }
 
 message EmailRequest {

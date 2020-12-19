@@ -11,13 +11,20 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"net/http"
 )
 
 const (
-	port = ":50051"
+	domain      = "localhost"
+	grpcPort    = ":50051"
+	grpcAddress = domain + grpcPort
+	httpPort    = ":50052"
+	httpAddress = domain + httpPort
 )
 
 type EVApiV1 struct {
@@ -26,7 +33,7 @@ type EVApiV1 struct {
 }
 
 func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (*v1.EmailResponse, error) {
-	var result v1.IsEmailResponse_Result
+	var response v1.EmailResponse
 
 	present, err := e.presenter.SingleValidation(ev_email.EmailFromString(request.Email), e.preparersMatching[request.ResultType])
 	if err != nil {
@@ -35,7 +42,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 
 	switch v := present.(type) {
 	case mailboxvalidator.DepPresenter:
-		result = &v1.EmailResponse_MailBoxValidator{
+		response = v1.EmailResponse{Result: &v1.EmailResponse_MailBoxValidator{
 			MailBoxValidator: &api_mbv.Result{
 				EmailAddress:          v.EmailAddress,
 				Domain:                v.Domain,
@@ -58,6 +65,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 				ErrorCode:             v.ErrorCode,
 				ErrorMessage:          v.ErrorMessage,
 			},
+		},
 		}
 	default:
 		ciee, ok := present.(check_if_email_exist.DepPresenter)
@@ -65,7 +73,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 			return nil, errors.New("invalid ResultType")
 		}
 
-		result = &v1.EmailResponse_CheckIfEmailExist{
+		response = v1.EmailResponse{Result: &v1.EmailResponse_CheckIfEmailExist{
 			CheckIfEmailExist: &api_ciee.Result{
 				Input:       ciee.Input,
 				IsReachable: ciee.IsReachable.String(),
@@ -73,11 +81,11 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 					IsDisposable:  ciee.Misc.IsDisposable,
 					IsRoleAccount: ciee.Misc.IsRoleAccount,
 				},
-				MX: &api_ciee.MX{
+				Mx: &api_ciee.MX{
 					AcceptsMail: ciee.MX.AcceptsMail,
 					Records:     ciee.MX.Records,
 				},
-				SMTP: &api_ciee.SMTP{
+				Smtp: &api_ciee.SMTP{
 					CanConnectSmtp: ciee.SMTP.CanConnectSmtp,
 					HasFullInbox:   ciee.SMTP.HasFullInbox,
 					IsCatchAll:     ciee.SMTP.IsCatchAll,
@@ -90,16 +98,15 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 					IsValidSyntax: ciee.Syntax.IsValidSyntax,
 				},
 			},
+		},
 		}
 	}
 
-	response := &v1.EmailResponse{Result: result}
-
-	return response, err
+	return &response, err
 }
 
 func main() {
-	server := grpc.NewServer()
+	var err error
 
 	instance := &EVApiV1{
 		presenter: presenter.NewPresenter(),
@@ -109,14 +116,38 @@ func main() {
 		},
 	}
 
-	v1.RegisterEmailValidationServer(server, instance)
+	grpcServer := grpc.NewServer()
+	v1.RegisterEmailValidationServer(grpcServer, instance)
 
-	listener, err := net.Listen("tcp", port)
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var group errgroup.Group
+	group.Go(func() error {
+		listener, err := net.Listen("tcp", grpcAddress)
+		if err != nil {
+			log.Fatal("Unable to create grpc listener:", err)
+		}
+		return grpcServer.Serve(listener)
+	})
+
+	mux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}))
+	opts := []grpc.DialOption{
+		grpc.WithInsecure(), grpc.WithBlock(),
+	}
+	group.Go(func() error {
+		return v1.RegisterEmailValidationHandlerFromEndpoint(ctx, mux, grpcAddress, opts)
+	})
+
+	group.Go(func() error {
+		return http.ListenAndServe(httpAddress, mux)
+	})
+
+	err = group.Wait()
 	if err != nil {
-		log.Fatal("Unable to create grpc listener:", err)
+		panic(err)
 	}
 
-	if err = server.Serve(listener); err != nil {
-		log.Fatal("Unable to start server:", err)
-	}
+	return
 }

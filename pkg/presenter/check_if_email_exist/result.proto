@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist;
 
-option go_package = "github.com/go-email-validator/go-ev-presenter/pkg/api/v1/check_if_email_exist";
+option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist";
 
 message Result {
   string input = 1;

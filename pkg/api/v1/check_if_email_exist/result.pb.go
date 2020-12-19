@@ -24,8 +24,8 @@ type Result struct {
 	Input                string   `protobuf:"bytes,1,opt,name=input,proto3" json:"input,omitempty"`
 	IsReachable          string   `protobuf:"bytes,2,opt,name=is_reachable,json=isReachable,proto3" json:"is_reachable,omitempty"`
 	Misc                 *Misc    `protobuf:"bytes,3,opt,name=misc,proto3" json:"misc,omitempty"`
-	MX                   *MX      `protobuf:"bytes,4,opt,name=mx,proto3" json:"mx,omitempty"`
-	SMTP                 *SMTP    `protobuf:"bytes,5,opt,name=smtp,proto3" json:"smtp,omitempty"`
+	Mx                   *MX      `protobuf:"bytes,4,opt,name=mx,proto3" json:"mx,omitempty"`
+	Smtp                 *SMTP    `protobuf:"bytes,5,opt,name=smtp,proto3" json:"smtp,omitempty"`
 	Syntax               *Syntax  `protobuf:"bytes,6,opt,name=syntax,proto3" json:"syntax,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -79,14 +79,14 @@ func (m *Result) GetMisc() *Misc {
 
 func (m *Result) GetMx() *MX {
 	if m != nil {
-		return m.MX
+		return m.Mx
 	}
 	return nil
 }
 
 func (m *Result) GetSmtp() *SMTP {
 	if m != nil {
-		return m.SMTP
+		return m.Smtp
 	}
 	return nil
 }
@@ -353,12 +353,12 @@ func (m *Syntax) GetIsValidSyntax() bool {
 }
 
 func init() {
-	proto.RegisterType((*Result)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.check_if_email_exist.Result")
-	proto.RegisterType((*Disposable)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.check_if_email_exist.Disposable")
-	proto.RegisterType((*MX)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.check_if_email_exist.MX")
-	proto.RegisterType((*Misc)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.check_if_email_exist.Misc")
-	proto.RegisterType((*SMTP)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.check_if_email_exist.SMTP")
-	proto.RegisterType((*Syntax)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.check_if_email_exist.Syntax")
+	proto.RegisterType((*Result)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.Result")
+	proto.RegisterType((*Disposable)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.Disposable")
+	proto.RegisterType((*MX)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.MX")
+	proto.RegisterType((*Misc)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.Misc")
+	proto.RegisterType((*SMTP)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.SMTP")
+	proto.RegisterType((*Syntax)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.Syntax")
 }
 
 func init() { proto.RegisterFile("result.proto", fileDescriptor_4feee897733d2100) }

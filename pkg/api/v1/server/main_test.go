@@ -3,24 +3,48 @@ package server
 import (
 	"context"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"testing"
 	"time"
 )
 
 const (
-	address      = "localhost:50051"
 	defaultEmail = "go.email.validator@gmail.com"
 )
 
-func TestServer(t *testing.T) {
+func TestServer_HTTP(t *testing.T) {
+	go main()
+
+	time.Sleep(time.Second)
+	// Set up a connection to the server.
+	resp, err := http.Get("http://" + httpAddress + "/v1/validation/single/" + defaultEmail + "?result_type=0")
+	if err != nil {
+		log.Print(err)
+		assert.True(t, false)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Print(err)
+		assert.True(t, false)
+	}
+	bodyStr := string(body)
+	log.Print(bodyStr)
+	assert.True(t, true)
+}
+
+func TestServer_GRPC(t *testing.T) {
 	go main()
 
 	// Set up a connection to the server.
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(2*time.Second))
+	conn, err := grpc.Dial(grpcAddress, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(2*time.Second))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Printf("did not connect: %v", err)
+		assert.True(t, false)
 	}
 	defer conn.Close()
 	c := v1.NewEmailValidationClient(conn)
@@ -31,7 +55,9 @@ func TestServer(t *testing.T) {
 	defer cancel()
 	r, err := c.SingleValidation(ctx, &v1.EmailRequest{Email: email, ResultType: v1.ResultType_CIEE})
 	if err != nil {
-		log.Fatalf("could not SingleValidation: %v", err)
+		log.Printf("could not SingleValidation: %v", err)
+		assert.True(t, false)
 	}
 	log.Printf("Result: %s", r.GetResult())
+	assert.True(t, true)
 }

@@ -211,7 +211,7 @@ func (m *Result) GetErrorMessage() string {
 }
 
 func init() {
-	proto.RegisterType((*Result)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenter.mailboxvalidator.Result")
+	proto.RegisterType((*Result)(nil), "github.com.go_email_validator.go_ev_presenters.pkg.presenters.mailboxvalidator.Result")
 }
 
 func init() { proto.RegisterFile("result.proto", fileDescriptor_4feee897733d2100) }
