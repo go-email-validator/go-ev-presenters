@@ -1,15 +1,17 @@
+API_PATH = pkg/api/v1/
+VERSION=0.0.1
 
 protoc.go:
 	protoc \
 	--proto_path=$(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist \
 	--proto_path=$(GOPATH)/src \
-	--go-go_out=plugins=grpc:$(GOPATH)/src/ \
+	--go_out=paths=source_relative:$(API_PATH)/check_if_email_exist \
 	result.proto
 
 	protoc \
 	--proto_path=$(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator \
 	--proto_path=$(GOPATH)/src \
-	--go-go_out=plugins=grpc:$(GOPATH)/src/ \
+	--go_out=paths=source_relative:$(API_PATH)/mailboxvalidator \
 	result.proto
 
 	protoc \
@@ -17,11 +19,11 @@ protoc.go:
 	--proto_path=$(GOPATH)/src \
 	--proto_path=$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway \
 	--proto_path=$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	--go-go_out=plugins=grpc:$(GOPATH)/src/ \
-	--grpc-gateway_out=logtostderr=true:$(GOPATH)/src/ \
+	--go_out=paths=source_relative:$(API_PATH) \
+	--go-grpc_out=paths=source_relative:$(API_PATH) \
+	--grpc-gateway_out=logtostderr=true,paths=source_relative:$(API_PATH) \
+	--openapiv2_out api/v1/swagger \
 	ev.proto
-
-	# go run $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/api/v1/cmd/openapi.go
 
 protoc.openapi:
 	protoc \
@@ -41,3 +43,13 @@ mount:
 
 grpc.server:
 	go run pkg/api/v1/server/main.go
+
+docker.build_run: docker.build docker.run
+
+docker.run:
+	docker run -it --rm --name my-running-app -p 50051:50051 -p 50052:50052 email-validator:$(VERSION)
+
+docker.build:
+	cp -r ~/.ssh ./.ssh
+	docker build -f build/Dockerfile -t email-validator:$(VERSION) .
+	rm -fr .ssh

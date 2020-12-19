@@ -1,0 +1,304 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ev.proto",
+    "version": "0.0.1"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/validation/single": {
+      "post": {
+        "operationId": "EmailValidation_singleValidation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EmailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EmailValidation"
+        ]
+      }
+    },
+    "/v1/validation/single/{email}": {
+      "get": {
+        "operationId": "EmailValidation_singleValidation2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resultType",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "CHECK_IF_EMAIL_EXIST",
+              "CIEE",
+              "MAILBOXVALIDATOR",
+              "MAIL_BOX_VALIDATOR",
+              "MBV"
+            ],
+            "default": "CHECK_IF_EMAIL_EXIST"
+          }
+        ],
+        "tags": [
+          "EmailValidation"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "check_if_email_existMX": {
+      "type": "object",
+      "properties": {
+        "acceptsMail": {
+          "type": "boolean"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "check_if_email_existMisc": {
+      "type": "object",
+      "properties": {
+        "isDisposable": {
+          "type": "boolean"
+        },
+        "isRoleAccount": {
+          "type": "boolean"
+        }
+      }
+    },
+    "check_if_email_existSMTP": {
+      "type": "object",
+      "properties": {
+        "canConnectSmtp": {
+          "type": "boolean"
+        },
+        "hasFullInbox": {
+          "type": "boolean"
+        },
+        "isCatchAll": {
+          "type": "boolean"
+        },
+        "isDeliverable": {
+          "type": "boolean"
+        },
+        "isDisabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "check_if_email_existSyntax": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "isValidSyntax": {
+          "type": "boolean"
+        }
+      }
+    },
+    "presenterscheck_if_email_existResult": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string"
+        },
+        "isReachable": {
+          "type": "string"
+        },
+        "misc": {
+          "$ref": "#/definitions/check_if_email_existMisc"
+        },
+        "mx": {
+          "$ref": "#/definitions/check_if_email_existMX"
+        },
+        "smtp": {
+          "$ref": "#/definitions/check_if_email_existSMTP"
+        },
+        "syntax": {
+          "$ref": "#/definitions/check_if_email_existSyntax"
+        }
+      }
+    },
+    "presentersmailboxvalidatorResult": {
+      "type": "object",
+      "properties": {
+        "emailAddress": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "isFree": {
+          "type": "string"
+        },
+        "isSyntax": {
+          "type": "string"
+        },
+        "isDomain": {
+          "type": "string"
+        },
+        "isSmtp": {
+          "type": "string"
+        },
+        "isVerified": {
+          "type": "string"
+        },
+        "isServerDown": {
+          "type": "string"
+        },
+        "isGreylisted": {
+          "type": "string"
+        },
+        "isDisposable": {
+          "type": "string"
+        },
+        "isSuppressed": {
+          "type": "string"
+        },
+        "isRole": {
+          "type": "string"
+        },
+        "isHighRisk": {
+          "type": "string"
+        },
+        "isCatchall": {
+          "type": "string"
+        },
+        "mailboxvalidatorScore": {
+          "type": "string"
+        },
+        "timeTaken": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "creditsAvailable": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1EmailRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "resultType": {
+          "$ref": "#/definitions/v1ResultType"
+        }
+      }
+    },
+    "v1EmailResponse": {
+      "type": "object",
+      "properties": {
+        "checkIfEmailExist": {
+          "$ref": "#/definitions/presenterscheck_if_email_existResult"
+        },
+        "mailBoxValidator": {
+          "$ref": "#/definitions/presentersmailboxvalidatorResult"
+        }
+      }
+    },
+    "v1ResultType": {
+      "type": "string",
+      "enum": [
+        "CHECK_IF_EMAIL_EXIST",
+        "CIEE",
+        "MAILBOXVALIDATOR",
+        "MAIL_BOX_VALIDATOR",
+        "MBV"
+      ],
+      "default": "CHECK_IF_EMAIL_EXIST"
+    }
+  }
+}

@@ -6,6 +6,13 @@ option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1";
 import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/result.proto";
 import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/result.proto";
 import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    version: "0.0.1"
+  };
+};
 
 service EmailValidation {
   rpc singleValidation(EmailRequest) returns (EmailResponse) {

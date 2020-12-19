@@ -13,7 +13,7 @@ func check(e error) {
 	}
 }
 
-func main() {
+func updateRestApiForOneOf() {
 	functionPrefix := "forward_EmailValidation_SingleValidation_"
 	functionArguments := "(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)"
 

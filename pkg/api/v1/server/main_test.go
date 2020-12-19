@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"context"
@@ -19,6 +19,7 @@ const (
 func TestServer_HTTP(t *testing.T) {
 	go main()
 
+	// TODO remove sleep
 	time.Sleep(time.Second)
 	// Set up a connection to the server.
 	resp, err := http.Get("http://" + httpAddress + "/v1/validation/single/" + defaultEmail + "?result_type=0")

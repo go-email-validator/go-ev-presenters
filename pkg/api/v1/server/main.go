@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"context"
@@ -11,16 +11,17 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 	"log"
 	"net"
 	"net/http"
 )
 
 const (
-	domain      = "localhost"
+	domain      = "0.0.0.0"
 	grpcPort    = ":50051"
 	grpcAddress = domain + grpcPort
 	httpPort    = ":50052"
@@ -30,6 +31,7 @@ const (
 type EVApiV1 struct {
 	presenter         presenter.Presenter
 	preparersMatching map[v1.ResultType]preparer.Name
+	v1.UnsafeEmailValidationServer
 }
 
 func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (*v1.EmailResponse, error) {
@@ -108,7 +110,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 func main() {
 	var err error
 
-	instance := &EVApiV1{
+	instance := EVApiV1{
 		presenter: presenter.NewPresenter(),
 		preparersMatching: map[v1.ResultType]preparer.Name{
 			v1.ResultType_CHECK_IF_EMAIL_EXIST: check_if_email_exist.Name,
@@ -132,7 +134,10 @@ func main() {
 		return grpcServer.Serve(listener)
 	})
 
-	mux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}))
+	mux := runtime.NewServeMux(runtime.WithMarshalerOption(
+		runtime.MIMEWildcard,
+		&runtime.JSONPb{MarshalOptions: protojson.MarshalOptions{EmitUnpopulated: true}},
+	))
 	opts := []grpc.DialOption{
 		grpc.WithInsecure(), grpc.WithBlock(),
 	}
