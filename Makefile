@@ -1,5 +1,6 @@
 API_PATH = pkg/api/v1/
 VERSION=0.0.1
+IMAGE=go-email-validator
 
 protoc.go:
 	protoc \
@@ -47,9 +48,18 @@ grpc.server:
 docker.build_run: docker.build docker.run
 
 docker.run:
-	docker run -it --rm --name my-running-app -p 50051:50051 -p 50052:50052 email-validator:$(VERSION)
+	docker run -it --rm --name my-running-app -p 50051:50051 -p 50052:50052 $(IMAGE):$(VERSION)
 
 docker.build:
 	cp -r ~/.ssh ./.ssh
-	docker build -f build/Dockerfile -t email-validator:$(VERSION) .
+	docker build -f build/Dockerfile -t $(IMAGE):$(VERSION) .
 	rm -fr .ssh
+
+docker.push: docker.push.version docker.push.latest
+
+docker.push.version:
+	docker image tag $(IMAGE):$(VERSION) $(DOCKER_USER)/$(IMAGE):$(VERSION)
+	docker push $(DOCKER_USER)/$(IMAGE):$(VERSION)
+docker.push.latest:
+	docker image tag $(IMAGE):$(VERSION) $(DOCKER_USER)/$(IMAGE):latest
+	docker push $(DOCKER_USER)/$(IMAGE):latest

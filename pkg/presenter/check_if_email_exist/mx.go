@@ -3,6 +3,7 @@ package check_if_email_exist
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
 
 type mxPresenter struct {
@@ -12,11 +13,11 @@ type mxPresenter struct {
 
 type mxPreparer struct{}
 
-func (s mxPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (_ mxPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
 	return result.ValidatorName() == ev.MXValidatorName
 }
 
-func (s mxPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (_ mxPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
 	mxResult := result.(ev.MXValidationResultInterface)
 	lenMX := len(mxResult.MX())
 	records := make([]string, lenMX)

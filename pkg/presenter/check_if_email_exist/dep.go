@@ -40,22 +40,22 @@ type DepPreparer struct {
 	calculateAvailability func(depPresenter DepPresenter) availability
 }
 
-func (s DepPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (_ DepPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
 	return result.ValidatorName() == ev.DepValidatorName
 }
 
-func (s DepPreparer) Prepare(email email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (s DepPreparer) Prepare(email email.EmailAddressInterface, result ev.ValidationResultInterface, opts preparer.OptionsInterface) interface{} {
 	depPresenter := DepPresenter{
 		Input: email.String(),
 		Misc:  miscPresenter{},
 	}
 
 	for _, validatorResult := range result.(ev.DepValidatorResultInterface).GetResults() {
-		if !s.preparer.CanPrepare(email, validatorResult) {
+		if !s.preparer.CanPrepare(email, validatorResult, opts) {
 			continue
 		}
 
-		switch v := s.preparer.Prepare(email, validatorResult).(type) {
+		switch v := s.preparer.Prepare(email, validatorResult, opts).(type) {
 		case rolePresenter:
 			depPresenter.Misc.rolePresenter = v
 		case disposablePresenter:

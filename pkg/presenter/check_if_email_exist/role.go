@@ -3,6 +3,7 @@ package check_if_email_exist
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
 
 type rolePresenter struct {
@@ -11,10 +12,10 @@ type rolePresenter struct {
 
 type rolePreparer struct{}
 
-func (s rolePreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (_ rolePreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
 	return result.ValidatorName() == ev.RoleValidatorName
 }
 
-func (s rolePreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (_ rolePreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
 	return rolePresenter{!result.IsValid()}
 }

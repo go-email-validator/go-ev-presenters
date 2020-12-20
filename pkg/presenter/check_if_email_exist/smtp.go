@@ -1,9 +1,11 @@
 package check_if_email_exist
 
 import (
+	"errors"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/smtp_checker"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/imdario/mergo"
 	"strings"
 )
@@ -21,18 +23,17 @@ var FalseSMTPPresenter = smtpPresenter{false, false, false, false, false}
 
 type SMTPPreparer struct{}
 
-func (s SMTPPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) bool {
+func (_ SMTPPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
 	return result.ValidatorName() == ev.SMTPValidatorName
 }
 
-func (s SMTPPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface) interface{} {
+func (_ SMTPPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
 	var presenter = smtpPresenter{}
 	var smtpError smtp_checker.SMTPError
 	var errString string
-	var ok bool
 
 	for _, err := range result.Errors() {
-		if smtpError, ok = err.(smtp_checker.SMTPError); !ok {
+		if !errors.As(err, &smtpError) {
 			continue
 		}
 

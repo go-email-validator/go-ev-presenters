@@ -7,6 +7,7 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"time"
 )
 
 func NewPresenter() Presenter {
@@ -29,5 +30,12 @@ func (p Presenter) SingleValidation(email ev_email.EmailAddressInterface, name p
 		return nil, errors.New(fmt.Sprintf("preparer with name %s does not exist", name))
 	}
 
-	return prep.Prepare(email, p.validator.Validate(email)), nil
+	t := 1500 * time.Nanosecond
+	fmt.Print(fmt.Sprint(t.Round(time.Microsecond).Seconds()))
+
+	start := time.Now()
+	validationResult := p.validator.Validate(email)
+	elapsed := time.Since(start)
+
+	return prep.Prepare(email, validationResult, preparer.Options{ExecutedTimeValue: elapsed}), nil
 }
