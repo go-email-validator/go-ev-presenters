@@ -17,10 +17,11 @@ const (
 )
 
 func TestServer_HTTP(t *testing.T) {
-	go main()
+	quit := make(chan bool)
+	wait := runServer(quit)
+	wait.Wait()
+	defer closeServer(quit)
 
-	// TODO remove sleep
-	time.Sleep(time.Second)
 	// Set up a connection to the server.
 	resp, err := http.Get("http://" + httpAddress + "/v1/validation/single/" + defaultEmail + "?result_type=0")
 	if err != nil {
@@ -39,7 +40,10 @@ func TestServer_HTTP(t *testing.T) {
 }
 
 func TestServer_GRPC(t *testing.T) {
-	go main()
+	quit := make(chan bool)
+	wait := runServer(quit)
+	wait.Wait()
+	defer closeServer(quit)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(grpcAddress, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(2*time.Second))

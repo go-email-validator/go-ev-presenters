@@ -14,6 +14,10 @@ Where result_type is enum for choosing of viewing:
 * 0 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
 * 1 - [mailboxviewer](https://www.mailboxvalidator.com/api-single-validation)
 
+# Information
+
+Probably some message from SMTP server would be on different languages.
+
 # Other
 
 go env -w GOPRIVATE=github.com/go-email-validator/*

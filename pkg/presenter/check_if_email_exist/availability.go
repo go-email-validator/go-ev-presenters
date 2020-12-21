@@ -1,20 +1,22 @@
 package check_if_email_exist
 
-type availability string
+import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 
-func (a availability) String() string {
+type Availability string
+
+func (a Availability) String() string {
 	return string(a)
 }
 
 const (
-	Risky   availability = "risky"
-	Invalid availability = "invalid"
-	Safe    availability = "safe"
-	Unknown availability = "unknown"
+	Risky   Availability = "risky"
+	Invalid Availability = "invalid"
+	Safe    Availability = "safe"
+	Unknown Availability = "unknown"
 )
 
-func calculateAvailability(depPresenter DepPresenter) availability {
-	if depPresenter.SMTP != FalseSMTPPresenter {
+func CalculateAvailability(depPresenter DepPresenter) Availability {
+	if depPresenter.SMTP != common.FalseSMTPPresenter {
 		if depPresenter.Misc.IsDisposable ||
 			depPresenter.Misc.IsRoleAccount ||
 			depPresenter.SMTP.IsCatchAll ||
@@ -29,7 +31,6 @@ func calculateAvailability(depPresenter DepPresenter) availability {
 		}
 
 		return Safe
-	} else {
-		return Unknown
 	}
+	return Unknown
 }

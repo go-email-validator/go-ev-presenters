@@ -3,6 +3,7 @@ package check_if_email_exist
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
 
@@ -14,30 +15,36 @@ type miscPresenter struct {
 }
 
 type DepPresenter struct {
-	Input       string          `json:"input"`
-	IsReachable availability    `json:"is_reachable"`
-	Misc        miscPresenter   `json:"misc"`
-	MX          mxPresenter     `json:"mx"`
-	SMTP        smtpPresenter   `json:"smtp"`
-	Syntax      syntaxPresenter `json:"syntax"`
+	Input       string               `json:"input"`
+	IsReachable Availability         `json:"is_reachable"`
+	Misc        miscPresenter        `json:"misc"`
+	MX          mxPresenter          `json:"mx"`
+	SMTP        common.SmtpPresenter `json:"smtp"`
+	Syntax      syntaxPresenter      `json:"syntax"`
 }
 
-func NewDepPreparer() DepPreparer {
-	return DepPreparer{
+type FuncAvailability func(depPresenter DepPresenter) Availability
+
+func NewDepPreparerDefault() DepPreparer {
+	return NewDepPreparer(
 		preparer.NewMultiplePreparer(preparer.MapPreparers{
 			ev.RoleValidatorName:       rolePreparer{},
 			ev.DisposableValidatorName: disposablePreparer{},
 			ev.MXValidatorName:         mxPreparer{},
-			ev.SMTPValidatorName:       SMTPPreparer{},
+			ev.SMTPValidatorName:       common.SMTPPreparer{},
 			ev.SyntaxValidatorName:     SyntaxPreparer{},
 		}),
-		calculateAvailability,
-	}
+		CalculateAvailability,
+	)
+}
+
+func NewDepPreparer(preparer preparer.MultiplePreparer, calculateAvailability FuncAvailability) DepPreparer {
+	return DepPreparer{preparer, calculateAvailability}
 }
 
 type DepPreparer struct {
 	preparer              preparer.MultiplePreparer
-	calculateAvailability func(depPresenter DepPresenter) availability
+	calculateAvailability FuncAvailability
 }
 
 func (_ DepPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
@@ -62,7 +69,7 @@ func (s DepPreparer) Prepare(email email.EmailAddressInterface, result ev.Valida
 			depPresenter.Misc.disposablePresenter = v
 		case mxPresenter:
 			depPresenter.MX = v
-		case smtpPresenter:
+		case common.SmtpPresenter:
 			depPresenter.SMTP = v
 		case syntaxPresenter:
 			depPresenter.Syntax = v

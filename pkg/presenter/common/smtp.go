@@ -1,4 +1,4 @@
-package check_if_email_exist
+package common
 
 import (
 	"errors"
@@ -10,16 +10,31 @@ import (
 	"strings"
 )
 
-type smtpPresenter struct {
+type SmtpPresenter struct {
 	CanConnectSmtp bool `json:"can_connect_smtp"`
 	HasFullInbox   bool `json:"has_full_inbox"`
 	IsCatchAll     bool `json:"is_catch_all"`
 	IsDeliverable  bool `json:"is_deliverable"`
 	IsDisabled     bool `json:"is_disabled"`
+	IsGreyListed   bool `json:"is_grey_listed"`
 }
 
-var SuccessSMTPPresenter = smtpPresenter{true, false, false, true, false}
-var FalseSMTPPresenter = smtpPresenter{false, false, false, false, false}
+var SuccessSMTPPresenter = SmtpPresenter{
+	CanConnectSmtp: true,
+	HasFullInbox:   false,
+	IsCatchAll:     false,
+	IsDeliverable:  true,
+	IsDisabled:     false,
+	IsGreyListed:   false,
+}
+var FalseSMTPPresenter = SmtpPresenter{
+	CanConnectSmtp: false,
+	HasFullInbox:   false,
+	IsCatchAll:     false,
+	IsDeliverable:  false,
+	IsDisabled:     false,
+	IsGreyListed:   false,
+}
 
 type SMTPPreparer struct{}
 
@@ -28,7 +43,7 @@ func (_ SMTPPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.Valida
 }
 
 func (_ SMTPPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
-	var presenter = smtpPresenter{}
+	var presenter = SmtpPresenter{}
 	var smtpError smtp_checker.SMTPError
 	var errString string
 
@@ -38,6 +53,11 @@ func (_ SMTPPreparer) Prepare(_ email.EmailAddressInterface, result ev.Validatio
 		}
 
 		errString = smtpError.Err().Error()
+		if strings.Contains(errString, "Greylist") ||
+			strings.Contains(errString, "greylist") {
+			presenter.IsGreyListed = true
+		}
+
 		switch smtpError.Stage() {
 		default:
 			presenter = FalseSMTPPresenter

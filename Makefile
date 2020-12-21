@@ -63,3 +63,9 @@ docker.push.version:
 docker.push.latest:
 	docker image tag $(IMAGE):$(VERSION) $(DOCKER_USER)/$(IMAGE):latest
 	docker push $(DOCKER_USER)/$(IMAGE):latest
+
+go.build:
+	go build ./pkg/...
+
+go.test:
+	go test ./pkg/... -race -covermode=atomic
