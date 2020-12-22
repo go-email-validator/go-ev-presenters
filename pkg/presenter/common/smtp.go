@@ -38,11 +38,11 @@ var FalseSMTPPresenter = SmtpPresenter{
 
 type SMTPPreparer struct{}
 
-func (_ SMTPPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
+func (_ SMTPPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.SMTPValidatorName
 }
 
-func (_ SMTPPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
+func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
 	var presenter = SmtpPresenter{}
 	var smtpError smtp_checker.SMTPError
 	var errString string

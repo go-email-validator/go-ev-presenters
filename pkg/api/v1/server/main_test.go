@@ -18,8 +18,8 @@ const (
 
 func TestServer_HTTP(t *testing.T) {
 	quit := make(chan bool)
-	wait := runServer(quit)
-	wait.Wait()
+	wg, _ := runServer(quit)
+	wg.Wait()
 	defer closeServer(quit)
 
 	// Set up a connection to the server.
@@ -41,8 +41,8 @@ func TestServer_HTTP(t *testing.T) {
 
 func TestServer_GRPC(t *testing.T) {
 	quit := make(chan bool)
-	wait := runServer(quit)
-	wait.Wait()
+	wg, _ := runServer(quit)
+	wg.Wait()
 	defer closeServer(quit)
 
 	// Set up a connection to the server.

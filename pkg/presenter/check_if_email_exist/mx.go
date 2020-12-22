@@ -13,12 +13,12 @@ type mxPresenter struct {
 
 type mxPreparer struct{}
 
-func (_ mxPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
+func (_ mxPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.MXValidatorName
 }
 
-func (_ mxPreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
-	mxResult := result.(ev.MXValidationResultInterface)
+func (_ mxPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
+	mxResult := result.(ev.MXValidationResult)
 	lenMX := len(mxResult.MX())
 	records := make([]string, lenMX)
 

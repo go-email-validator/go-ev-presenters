@@ -14,11 +14,11 @@ type syntaxPresenter struct {
 
 type SyntaxPreparer struct{}
 
-func (_ SyntaxPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
+func (_ SyntaxPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.SyntaxValidatorName
 }
 
-func (_ SyntaxPreparer) Prepare(email email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
+func (_ SyntaxPreparer) Prepare(email email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
 	return syntaxPresenter{
 		email.Username(),
 		email.Domain(),

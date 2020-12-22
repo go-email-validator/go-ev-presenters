@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Name = "MailBoxValidator"
+	Name preparer.Name = "MailBoxValidator"
 
 	MissingParameter        int32 = 100
 	MissingParameterMessage       = "Missing parameter."
@@ -58,12 +58,11 @@ type DepPreparer struct {
 	calculateScore FuncCalculateScore
 }
 
-func (_ DepPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, opts preparer.OptionsInterface) bool {
-	_, ok := opts.(preparer.TimeOptions)
-	return ok && result.ValidatorName() == ev.DepValidatorName
+func (_ DepPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, opts preparer.Options) bool {
+	return opts.ExecutedTime() != 0 && result.ValidatorName() == ev.DepValidatorName
 }
 
-func (d DepPreparer) Prepare(email email.EmailAddressInterface, resultInterface ev.ValidationResultInterface, opts preparer.OptionsInterface) (result interface{}) {
+func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.ValidationResult, opts preparer.Options) (result interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			result = DepPresenter{
@@ -80,8 +79,7 @@ func (d DepPreparer) Prepare(email email.EmailAddressInterface, resultInterface 
 		}
 	}
 
-	optsTime := opts.(preparer.TimeOptions)
-	depResult := resultInterface.(ev.DepValidatorResult)
+	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()
 
 	smtpPresenter := common.SMTPPreparer{}.Prepare(email, validationResults[ev.SMTPValidatorName], nil).(common.SmtpPresenter)
@@ -97,11 +95,11 @@ func (d DepPreparer) Prepare(email email.EmailAddressInterface, resultInterface 
 		IsServerDown:     !smtpPresenter.CanConnectSmtp,
 		IsGreylisted:     smtpPresenter.IsGreyListed,
 		IsDisposable:     validationResults[ev.DisposableValidatorName].IsValid(),
-		IsSuppressed:     !validationResults[ev.BlackListValidatorName].IsValid(),
+		IsSuppressed:     !validationResults[ev.BlackListEmailsValidatorName].IsValid(), // TODO find more examples example@example.com
 		IsRole:           validationResults[ev.RoleValidatorName].IsValid(),
-		IsHighRisk:       false, // TODO try to find some risk words
+		IsHighRisk:       !validationResults[ev.BanWordsUsernameValidatorName].IsValid(), // TODO find more words
 		IsCatchall:       smtpPresenter.IsCatchAll,
-		TimeTaken:        optsTime.ExecutedTime(),
+		TimeTaken:        opts.ExecutedTime(),
 		Status:           resultInterface.IsValid(), // valid or not use warning
 		CreditsAvailable: ^uint32(0),
 		ErrorCode:        "",

@@ -54,10 +54,10 @@ github.com/envoyproxy/go-control-plane v0.9.7/go.mod h1:cwu0lG7PUMfa9snN8LXBig5y
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/go-email-validator/go-email-validator v0.0.0-20201217191033-3058cb396c0c h1:RU8qjHQ5uGXTNeau5bG4027Sr+8plFyBRF95x4mlUNc=
-github.com/go-email-validator/go-email-validator v0.0.0-20201217191033-3058cb396c0c/go.mod h1:Ua9tWIUIifpJL7aJuH8Chfe3qevc9TD5JzHB15cJ2Hk=
-github.com/go-email-validator/go-email-validator v0.0.0-20201220184856-1b6b6123054c h1:UvA7CFkpSNR2oPPF9QVEqCT4+mPlrSXKNtXIZHuTbis=
-github.com/go-email-validator/go-email-validator v0.0.0-20201220184856-1b6b6123054c/go.mod h1:Ua9tWIUIifpJL7aJuH8Chfe3qevc9TD5JzHB15cJ2Hk=
+github.com/go-email-validator/go-email-validator v0.0.0-20201222122119-c08e7effed26 h1:51dYHlRRIfSjFVV9m+QuNu2LMI9ltib647iwtw0BNug=
+github.com/go-email-validator/go-email-validator v0.0.0-20201222122119-c08e7effed26/go.mod h1:Ua9tWIUIifpJL7aJuH8Chfe3qevc9TD5JzHB15cJ2Hk=
+github.com/go-email-validator/go-email-validator v0.0.0-20201222145627-1ca99467e7a5 h1:wZRW5J2ftMA33J2f80gfP+L009wo/S3tmhrnLn2tq1M=
+github.com/go-email-validator/go-email-validator v0.0.0-20201222145627-1ca99467e7a5/go.mod h1:Ua9tWIUIifpJL7aJuH8Chfe3qevc9TD5JzHB15cJ2Hk=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=

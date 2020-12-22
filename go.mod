@@ -3,7 +3,8 @@ module github.com/go-email-validator/go-ev-presenters
 go 1.15
 
 require (
-	github.com/go-email-validator/go-email-validator v0.0.0-20201220184856-1b6b6123054c
+	github.com/emirpasic/gods v1.12.0
+	github.com/go-email-validator/go-email-validator v0.0.0-20201222145627-1ca99467e7a5
 	github.com/golang/protobuf v1.4.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
 	github.com/imdario/mergo v0.3.11

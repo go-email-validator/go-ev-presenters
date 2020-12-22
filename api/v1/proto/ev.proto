@@ -3,8 +3,8 @@ syntax = "proto3";
 package github.com.go_email_validator.go_ev_presenters.api.v1;
 option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1";
 
-import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/result.proto";
-import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/result.proto";
+import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/check_if_email_exist.proto";
+import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/mailboxvalidator.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 

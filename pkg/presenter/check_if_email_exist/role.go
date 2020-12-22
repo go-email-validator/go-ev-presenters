@@ -12,10 +12,10 @@ type rolePresenter struct {
 
 type rolePreparer struct{}
 
-func (_ rolePreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
+func (_ rolePreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.RoleValidatorName
 }
 
-func (_ rolePreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
+func (_ rolePreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
 	return rolePresenter{!result.IsValid()}
 }

@@ -1,28 +1,28 @@
-API_PATH = pkg/api/v1/
+API_PKG_PATH = pkg/api/v1/
 VERSION=0.0.1
 IMAGE=go-email-validator
 
 protoc.go:
 	protoc \
-	--proto_path=$(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist \
+	--proto_path=pkg/presenter/check_if_email_exist \
 	--proto_path=$(GOPATH)/src \
-	--go_out=paths=source_relative:$(API_PATH)/check_if_email_exist \
-	result.proto
+	--go_out=paths=source_relative:$(API_PKG_PATH)/check_if_email_exist \
+	check_if_email_exist.proto
 
 	protoc \
-	--proto_path=$(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator \
+	--proto_path=pkg/presenter/mailboxvalidator \
 	--proto_path=$(GOPATH)/src \
-	--go_out=paths=source_relative:$(API_PATH)/mailboxvalidator \
-	result.proto
+	--go_out=paths=source_relative:$(API_PKG_PATH)/mailboxvalidator \
+	mailboxvalidator.proto
 
 	protoc \
-	--proto_path=$(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/api/v1/proto \
+	--proto_path=api/v1/proto \
 	--proto_path=$(GOPATH)/src \
 	--proto_path=$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway \
 	--proto_path=$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	--go_out=paths=source_relative:$(API_PATH) \
-	--go-grpc_out=paths=source_relative:$(API_PATH) \
-	--grpc-gateway_out=logtostderr=true,paths=source_relative:$(API_PATH) \
+	--go_out=paths=source_relative:$(API_PKG_PATH) \
+	--go-grpc_out=paths=source_relative:$(API_PKG_PATH) \
+	--grpc-gateway_out=logtostderr=true,paths=source_relative:$(API_PKG_PATH) \
 	--openapiv2_out api/v1/swagger \
 	ev.proto
 
@@ -48,14 +48,14 @@ grpc.server:
 docker.build_run: docker.build docker.run
 
 docker.run:
-	docker run -it --rm --name my-running-app -p 50051:50051 -p 50052:50052 $(IMAGE):$(VERSION)
+	docker run --rm --name my-running-app -p 50051:50051 -p 50052:50052 $(IMAGE):$(VERSION)
 
 docker.build:
 	cp -r ~/.ssh ./.ssh
 	docker build -f build/Dockerfile -t $(IMAGE):$(VERSION) .
 	rm -fr .ssh
 
-docker.push: docker.push.version docker.push.latest
+docker.push: docker.build docker.push.version docker.push.latest
 
 docker.push.version:
 	docker image tag $(IMAGE):$(VERSION) $(DOCKER_USER)/$(IMAGE):$(VERSION)

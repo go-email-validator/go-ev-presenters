@@ -7,7 +7,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
 
-const Name preparer.Name = "Name"
+const Name preparer.Name = "CheckIfEmailExist"
 
 type miscPresenter struct {
 	disposablePresenter
@@ -47,17 +47,17 @@ type DepPreparer struct {
 	calculateAvailability FuncAvailability
 }
 
-func (_ DepPreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
+func (_ DepPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.DepValidatorName
 }
 
-func (s DepPreparer) Prepare(email email.EmailAddressInterface, result ev.ValidationResultInterface, opts preparer.OptionsInterface) interface{} {
+func (s DepPreparer) Prepare(email email.EmailAddress, result ev.ValidationResult, opts preparer.Options) interface{} {
 	depPresenter := DepPresenter{
 		Input: email.String(),
 		Misc:  miscPresenter{},
 	}
 
-	for _, validatorResult := range result.(ev.DepValidatorResultInterface).GetResults() {
+	for _, validatorResult := range result.(ev.DepValidationResult).GetResults() {
 		if !s.preparer.CanPrepare(email, validatorResult, opts) {
 			continue
 		}

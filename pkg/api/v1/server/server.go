@@ -14,15 +14,15 @@ import (
 )
 
 type EVApiV1 struct {
-	presenter         presenter.Presenter
-	preparersMatching map[v1.ResultType]preparer.Name
+	presenter presenter.MultiplePresenter
+	matching  map[v1.ResultType]preparer.Name
 	v1.UnsafeEmailValidationServer
 }
 
 func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (*v1.EmailResponse, error) {
 	var response v1.EmailResponse
 
-	present, err := e.presenter.SingleValidation(ev_email.EmailFromString(request.Email), e.preparersMatching[request.ResultType])
+	present, err := e.presenter.SingleValidation(ev_email.EmailFromString(request.Email), e.matching[request.ResultType])
 	if err != nil {
 		return nil, err
 	}

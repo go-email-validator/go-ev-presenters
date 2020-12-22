@@ -26,7 +26,10 @@ const (
 )
 
 func main() {
-	runServer(nil)
+	quit := make(chan bool)
+	_, gr := runServer(quit)
+	gr.Wait()
+	defer closeServer(quit)
 }
 
 func checkErr(err error) {
@@ -35,7 +38,7 @@ func checkErr(err error) {
 	}
 }
 
-func runServer(quit chan bool) *sync.WaitGroup {
+func runServer(quit chan bool) (*sync.WaitGroup, *errgroup.Group) {
 	var grpcServer *grpc.Server
 	var httpServer *http.Server
 	go func() {
@@ -56,8 +59,8 @@ func runServer(quit chan bool) *sync.WaitGroup {
 	wg.Add(2)
 
 	instance := EVApiV1{
-		presenter: presenter.NewPresenter(),
-		preparersMatching: map[v1.ResultType]preparer.Name{
+		presenter: presenter.NewMultiplePresentersDefault(),
+		matching: map[v1.ResultType]preparer.Name{
 			v1.ResultType_CHECK_IF_EMAIL_EXIST: check_if_email_exist.Name,
 			v1.ResultType_MAIL_BOX_VALIDATOR:   mailboxvalidator.Name,
 		},
@@ -66,7 +69,7 @@ func runServer(quit chan bool) *sync.WaitGroup {
 	grpcServer = grpc.NewServer()
 	v1.RegisterEmailValidationServer(grpcServer, instance)
 
-	var group errgroup.Group
+	var group = new(errgroup.Group)
 	listener, err := net.Listen("tcp", grpcAddress)
 	checkErr(err)
 	group.Go(func() error {
@@ -76,7 +79,7 @@ func runServer(quit chan bool) *sync.WaitGroup {
 
 	mux := runtime.NewServeMux(runtime.WithMarshalerOption(
 		runtime.MIMEWildcard,
-		&runtime.JSONPb{MarshalOptions: protojson.MarshalOptions{EmitUnpopulated: true}},
+		&runtime.JSONPb{MarshalOptions: protojson.MarshalOptions{EmitUnpopulated: true, UseProtoNames: true}},
 	))
 	httpServer = &http.Server{Addr: httpAddress, Handler: mux}
 	opts := []grpc.DialOption{
@@ -108,7 +111,7 @@ func runServer(quit chan bool) *sync.WaitGroup {
 		checkErr(err)
 	}()
 
-	return wg
+	return wg, group
 }
 
 func closeServer(quit chan bool) {

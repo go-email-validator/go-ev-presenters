@@ -12,10 +12,10 @@ type disposablePresenter struct {
 
 type disposablePreparer struct{}
 
-func (_ disposablePreparer) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) bool {
+func (_ disposablePreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.DisposableValidatorName
 }
 
-func (_ disposablePreparer) Prepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, _ preparer.OptionsInterface) interface{} {
+func (_ disposablePreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
 	return disposablePresenter{!result.IsValid()}
 }

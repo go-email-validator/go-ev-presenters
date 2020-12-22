@@ -47,16 +47,15 @@ func NewDepPreparerForView(preparer DepPreparer) DepPreparerForView {
 }
 
 type DepPreparerForView struct {
-	DepPreparer
+	d DepPreparer
 }
 
-func (_ DepPreparerForView) CanPrepare(_ email.EmailAddressInterface, result ev.ValidationResultInterface, opts preparer.OptionsInterface) bool {
-	_, ok := opts.(preparer.TimeOptions)
-	return ok && result.ValidatorName() == ev.DepValidatorName
+func (d DepPreparerForView) CanPrepare(email email.EmailAddress, result ev.ValidationResult, opts preparer.Options) bool {
+	return d.d.CanPrepare(email, result, opts)
 }
 
-func (d DepPreparerForView) Prepare(email email.EmailAddressInterface, resultInterface ev.ValidationResultInterface, opts preparer.OptionsInterface) interface{} {
-	depPresenter := d.Prepare(email, resultInterface, opts).(DepPresenter)
+func (d DepPreparerForView) Prepare(email email.EmailAddress, resultInterface ev.ValidationResult, opts preparer.Options) interface{} {
+	depPresenter := d.d.Prepare(email, resultInterface, opts).(DepPresenter)
 
 	return DepPresenterForView{
 		EmailAddress:          depPresenter.EmailAddress,

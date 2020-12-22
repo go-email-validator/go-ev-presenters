@@ -92,7 +92,7 @@
     "check_if_email_existMX": {
       "type": "object",
       "properties": {
-        "acceptsMail": {
+        "accepts_mail": {
           "type": "boolean"
         },
         "records": {
@@ -106,10 +106,10 @@
     "check_if_email_existMisc": {
       "type": "object",
       "properties": {
-        "isDisposable": {
+        "is_disposable": {
           "type": "boolean"
         },
-        "isRoleAccount": {
+        "is_role_account": {
           "type": "boolean"
         }
       }
@@ -117,19 +117,19 @@
     "check_if_email_existSMTP": {
       "type": "object",
       "properties": {
-        "canConnectSmtp": {
+        "can_connect_smtp": {
           "type": "boolean"
         },
-        "hasFullInbox": {
+        "has_full_inbox": {
           "type": "boolean"
         },
-        "isCatchAll": {
+        "is_catch_all": {
           "type": "boolean"
         },
-        "isDeliverable": {
+        "is_deliverable": {
           "type": "boolean"
         },
-        "isDisabled": {
+        "is_disabled": {
           "type": "boolean"
         }
       }
@@ -143,7 +143,7 @@
         "domain": {
           "type": "string"
         },
-        "isValidSyntax": {
+        "is_valid_syntax": {
           "type": "boolean"
         }
       }
@@ -154,7 +154,7 @@
         "input": {
           "type": "string"
         },
-        "isReachable": {
+        "is_reachable": {
           "type": "string"
         },
         "misc": {
@@ -174,65 +174,65 @@
     "presentersmailboxvalidatorResult": {
       "type": "object",
       "properties": {
-        "emailAddress": {
+        "email_address": {
           "type": "string"
         },
         "domain": {
           "type": "string"
         },
-        "isFree": {
+        "is_free": {
           "type": "string"
         },
-        "isSyntax": {
+        "is_syntax": {
           "type": "string"
         },
-        "isDomain": {
+        "is_domain": {
           "type": "string"
         },
-        "isSmtp": {
+        "is_smtp": {
           "type": "string"
         },
-        "isVerified": {
+        "is_verified": {
           "type": "string"
         },
-        "isServerDown": {
+        "is_server_down": {
           "type": "string"
         },
-        "isGreylisted": {
+        "is_greylisted": {
           "type": "string"
         },
-        "isDisposable": {
+        "is_disposable": {
           "type": "string"
         },
-        "isSuppressed": {
+        "is_suppressed": {
           "type": "string"
         },
-        "isRole": {
+        "is_role": {
           "type": "string"
         },
-        "isHighRisk": {
+        "is_high_risk": {
           "type": "string"
         },
-        "isCatchall": {
+        "is_catchall": {
           "type": "string"
         },
-        "mailboxvalidatorScore": {
+        "mailboxvalidator_score": {
           "type": "string"
         },
-        "timeTaken": {
+        "time_taken": {
           "type": "string"
         },
         "status": {
           "type": "string"
         },
-        "creditsAvailable": {
+        "credits_available": {
           "type": "integer",
           "format": "int64"
         },
-        "errorCode": {
+        "error_code": {
           "type": "string"
         },
-        "errorMessage": {
+        "error_message": {
           "type": "string"
         }
       }
