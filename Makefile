@@ -16,6 +16,12 @@ protoc.go:
 	mailboxvalidator.proto
 
 	protoc \
+	--proto_path=pkg/presenter/prompt_email_verification_api \
+	--proto_path=$(GOPATH)/src \
+	--go_out=paths=source_relative:$(API_PKG_PATH)/prompt_email_verification_api \
+	prompt_email_verification_api.proto
+
+	protoc \
 	--proto_path=api/v1/proto \
 	--proto_path=$(GOPATH)/src \
 	--proto_path=$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway \

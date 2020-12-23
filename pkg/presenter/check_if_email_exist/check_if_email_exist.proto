@@ -13,18 +13,14 @@ message Result {
   Syntax syntax = 6 [json_name = "syntax"];
 }
 
-message Disposable {
+message Misc {
   bool is_disposable = 1 [json_name = "is_disposable"];
+  bool is_role_account = 2 [json_name = "is_role_account"];
 }
 
 message MX {
   bool accepts_mail = 1 [json_name = "accepts_mail"];
   repeated string records = 2 [json_name = "records"];
-}
-
-message Misc {
-  bool is_disposable = 1 [json_name = "is_disposable"];
-  bool is_role_account = 2 [json_name = "is_role_account"];
 }
 
 message SMTP {
@@ -36,7 +32,8 @@ message SMTP {
 }
 
 message Syntax {
-  string username = 1 [json_name = "username"];
+  string address = 1 [json_name = "username"];
   string domain = 2 [json_name = "domain"];
   bool is_valid_syntax = 3 [json_name = "is_valid_syntax"];
+  string username = 4 [json_name = "username"];
 }

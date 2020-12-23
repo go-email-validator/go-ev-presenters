@@ -14,6 +14,7 @@ type miscPresenter struct {
 	rolePresenter
 }
 
+// https://github.com/amaurymartiny/check-if-email-exists or https://reacher.email
 type DepPresenter struct {
 	Input       string               `json:"input"`
 	IsReachable Availability         `json:"is_reachable"`

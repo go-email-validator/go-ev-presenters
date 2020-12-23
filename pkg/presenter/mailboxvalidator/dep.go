@@ -21,6 +21,7 @@ const (
 	UnknownErrorMessage           = "Unknown error."
 )
 
+// https://www.mailboxvalidator.com/
 type DepPresenter struct {
 	EmailAddress          string        `json:"email_address"`
 	Domain                string        `json:"domain"`
@@ -94,7 +95,7 @@ func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.Valida
 		IsVerified:       smtpPresenter.IsDeliverable,
 		IsServerDown:     !smtpPresenter.CanConnectSmtp,
 		IsGreylisted:     smtpPresenter.IsGreyListed,
-		IsDisposable:     validationResults[ev.DisposableValidatorName].IsValid(),
+		IsDisposable:     !validationResults[ev.DisposableValidatorName].IsValid(),
 		IsSuppressed:     !validationResults[ev.BlackListEmailsValidatorName].IsValid(), // TODO find more examples example@example.com
 		IsRole:           validationResults[ev.RoleValidatorName].IsValid(),
 		IsHighRisk:       !validationResults[ev.BanWordsUsernameValidatorName].IsValid(), // TODO find more words

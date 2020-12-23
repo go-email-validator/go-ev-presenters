@@ -10,6 +10,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 	"time"
 )
 
@@ -33,6 +34,10 @@ func NewMultiplePresentersDefault() MultiplePresenter {
 				ev.FreeDefaultValidator(),
 			).Build(),
 			mailboxvalidator.NewDepPreparerForViewDefault(),
+		),
+		prompt_email_verification_api.Name: NewPresenter(
+			ev.NewDepBuilder(nil).Build(),
+			prompt_email_verification_api.NewDepPreparerDefault(),
 		),
 	}}
 }

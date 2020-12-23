@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package github.com.go_email_validator.go_ev_presenters.pkg.presenters.prompt_email_verification_api;
+
+option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/prompt_email_verification_api";
+
+message Result {
+  bool can_connect_smtp = 1 [json_name = "can_connect_smtp"];
+  string email = 2 [json_name = "email"];
+  bool is_catch_all = 3 [json_name = "is_catch_all"];
+  bool is_deliverable = 4 [json_name = "is_deliverable"];
+  bool is_disabled = 5 [json_name = "is_disabled"];
+  bool is_disposable = 6 [json_name = "is_disposable"];
+  bool is_inbox_full = 7 [json_name = "is_inbox_full"];
+  bool is_role_account = 8 [json_name = "is_role_account"];
+  MX mx_records = 9 [json_name = "mx_records"];
+  bool syntax_valid = 10 [json_name = "syntax_valid"];
+  message MX {
+    bool accepts_mail = 1 [json_name = "accepts_mail"];
+    repeated  string records = 2 [json_name = "records"];
+  }
+}

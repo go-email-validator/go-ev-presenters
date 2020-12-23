@@ -6,7 +6,7 @@ import (
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/smtp_checker"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
-	"github.com/imdario/mergo"
+	"net/textproto"
 	"strings"
 )
 
@@ -19,10 +19,10 @@ type SmtpPresenter struct {
 	IsGreyListed   bool `json:"is_grey_listed"`
 }
 
-var SuccessSMTPPresenter = SmtpPresenter{
+var WithoutErrsSMTPPresenter = SmtpPresenter{
 	CanConnectSmtp: true,
 	HasFullInbox:   false,
-	IsCatchAll:     false,
+	IsCatchAll:     true,
 	IsDeliverable:  true,
 	IsDisabled:     false,
 	IsGreyListed:   false,
@@ -43,37 +43,45 @@ func (_ SMTPPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResul
 }
 
 func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
-	var presenter = SmtpPresenter{}
+	var presenter = WithoutErrsSMTPPresenter
 	var smtpError smtp_checker.SMTPError
 	var errString string
+	var errCode int
 
-	for _, err := range result.Errors() {
+	errs := result.Errors()
+	errs = append(errs, result.Warnings()...)
+	for _, err := range errs {
 		if !errors.As(err, &smtpError) {
 			continue
 		}
 
-		errString = smtpError.Err().Error()
-		if strings.Contains(errString, "Greylist") ||
-			strings.Contains(errString, "greylist") {
+		errString = strings.ToLower(smtpError.Err().Error())
+		errCode = smtpError.Err().(*textproto.Error).Code
+		if strings.Contains(errString, "greylist") {
 			presenter.IsGreyListed = true
 		}
 
 		switch smtpError.Stage() {
-		default:
+		case smtp_checker.ConnectionStage:
 			presenter = FalseSMTPPresenter
+		case smtp_checker.HelloStage,
+			smtp_checker.AuthStage,
+			smtp_checker.MailStage:
+			presenter.IsDeliverable = false
 		case smtp_checker.RandomRCPTStage:
 			presenter.IsCatchAll = false
 		case smtp_checker.RCPTStage:
 			presenter.IsDeliverable = false
 			switch {
-			case strings.Contains(errString, "disabled"),
+			case strings.Contains(errString, "disabled") ||
 				strings.Contains(errString, "discontinued"):
 				presenter.IsDisabled = true
-			case strings.Contains(errString, "full"),
-				strings.Contains(errString, "insufficient"),
-				strings.Contains(errString, "over quota"),
-				strings.Contains(errString, "space"),
-				strings.Contains(errString, "too many messages"):
+			case errCode == 452 && (strings.Contains(errString, "full") ||
+				strings.Contains(errString, "insufficient") ||
+				strings.Contains(errString, "over quota") ||
+				strings.Contains(errString, "space") ||
+				strings.Contains(errString, "too many messages")):
+
 				presenter.HasFullInbox = true
 			case strings.Contains(errString, "the user you are trying to contact is receiving mail at a rate that"):
 				presenter.IsDeliverable = true
@@ -81,6 +89,5 @@ func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, 
 		}
 	}
 
-	mergo.Merge(&presenter, SuccessSMTPPresenter)
 	return presenter
 }

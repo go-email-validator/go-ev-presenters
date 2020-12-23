@@ -5,8 +5,12 @@ import (
 	"strings"
 )
 
+var hasNumberInUserNameRE = regexp.MustCompile(`.*\d.*?`)
+var hasDotInUsername = regexp.MustCompile(`.*\..*?`)
+var minScore = 1
+
 func CalculateScore(presenter DepPresenter) float64 {
-	score, minScore := 1, 1
+	score := minScore
 
 	if presenter.IsDomain && presenter.IsSyntax {
 		score += 9
@@ -44,8 +48,6 @@ func CalculateScore(presenter DepPresenter) float64 {
 		pos = len(presenter.EmailAddress) - 1
 	}
 	username := presenter.EmailAddress[:pos]
-	hasNumberInUserNameRE := regexp.MustCompile(`.*\d.*?`)
-	hasDotInUsername := regexp.MustCompile(`.*\..*?`)
 
 	if hasNumberInUserNameRE.MatchString(username) {
 		score -= 2

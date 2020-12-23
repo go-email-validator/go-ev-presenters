@@ -77,7 +77,9 @@
               "CIEE",
               "MAILBOXVALIDATOR",
               "MAIL_BOX_VALIDATOR",
-              "MBV"
+              "MBV",
+              "PROMPT_EMAIL_VERIFICATION_API",
+              "PEVA"
             ],
             "default": "CHECK_IF_EMAIL_EXIST"
           }
@@ -89,20 +91,6 @@
     }
   },
   "definitions": {
-    "check_if_email_existMX": {
-      "type": "object",
-      "properties": {
-        "accepts_mail": {
-          "type": "boolean"
-        },
-        "records": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "check_if_email_existMisc": {
       "type": "object",
       "properties": {
@@ -137,14 +125,28 @@
     "check_if_email_existSyntax": {
       "type": "object",
       "properties": {
-        "username": {
-          "type": "string"
-        },
         "domain": {
           "type": "string"
         },
         "is_valid_syntax": {
           "type": "boolean"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "presenterscheck_if_email_existMX": {
+      "type": "object",
+      "properties": {
+        "accepts_mail": {
+          "type": "boolean"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -161,7 +163,7 @@
           "$ref": "#/definitions/check_if_email_existMisc"
         },
         "mx": {
-          "$ref": "#/definitions/check_if_email_existMX"
+          "$ref": "#/definitions/presenterscheck_if_email_existMX"
         },
         "smtp": {
           "$ref": "#/definitions/check_if_email_existSMTP"
@@ -237,6 +239,55 @@
         }
       }
     },
+    "presentersprompt_email_verification_apiResult": {
+      "type": "object",
+      "properties": {
+        "can_connect_smtp": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
+        },
+        "is_catch_all": {
+          "type": "boolean"
+        },
+        "is_deliverable": {
+          "type": "boolean"
+        },
+        "is_disabled": {
+          "type": "boolean"
+        },
+        "is_disposable": {
+          "type": "boolean"
+        },
+        "is_inbox_full": {
+          "type": "boolean"
+        },
+        "is_role_account": {
+          "type": "boolean"
+        },
+        "mx_records": {
+          "$ref": "#/definitions/prompt_email_verification_apiResultMX"
+        },
+        "syntax_valid": {
+          "type": "boolean"
+        }
+      }
+    },
+    "prompt_email_verification_apiResultMX": {
+      "type": "object",
+      "properties": {
+        "accepts_mail": {
+          "type": "boolean"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -286,6 +337,9 @@
         },
         "mailBoxValidator": {
           "$ref": "#/definitions/presentersmailboxvalidatorResult"
+        },
+        "promptEmailVerificationApi": {
+          "$ref": "#/definitions/presentersprompt_email_verification_apiResult"
         }
       }
     },
@@ -296,7 +350,9 @@
         "CIEE",
         "MAILBOXVALIDATOR",
         "MAIL_BOX_VALIDATOR",
-        "MBV"
+        "MBV",
+        "PROMPT_EMAIL_VERIFICATION_API",
+        "PEVA"
       ],
       "default": "CHECK_IF_EMAIL_EXIST"
     }

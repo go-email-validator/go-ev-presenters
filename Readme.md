@@ -1,4 +1,4 @@
-# How to use
+# Test
 
 ```bash
 docker run -p 50051:50051 -p 50052:50052 maranqz/go-email-validator

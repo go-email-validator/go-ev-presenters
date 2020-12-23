@@ -5,6 +5,7 @@ option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1";
 
 import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/check_if_email_exist.proto";
 import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/mailboxvalidator.proto";
+import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api/prompt_email_verification_api.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -35,6 +36,7 @@ message EmailResponse {
   oneof result {
     github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_email_exist.Result check_if_email_exist = 1;
     github.com.go_email_validator.go_ev_presenters.pkg.presenters.mailboxvalidator.Result mail_box_validator = 2;
+    github.com.go_email_validator.go_ev_presenters.pkg.presenters.prompt_email_verification_api.Result prompt_email_verification_api = 3;
   }
 }
 
@@ -45,4 +47,6 @@ enum ResultType {
   MAILBOXVALIDATOR = 1;
   MAIL_BOX_VALIDATOR = 1;
   MBV = 1;
+  PROMPT_EMAIL_VERIFICATION_API = 2;
+  PEVA = 2;
 }

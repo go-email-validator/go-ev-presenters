@@ -7,10 +7,12 @@ import (
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	api_ciee "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist"
 	api_mbv "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/mailboxvalidator"
+	api_prompt_email_verification "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/prompt_email_verification_api"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 )
 
 type EVApiV1 struct {
@@ -54,6 +56,24 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 			},
 		},
 		}
+	case prompt_email_verification_api.DepPresenter:
+		response = v1.EmailResponse{Result: &v1.EmailResponse_PromptEmailVerificationApi{
+			PromptEmailVerificationApi: &api_prompt_email_verification.Result{
+				Email:          v.Email,
+				SyntaxValid:    v.SyntaxValid,
+				IsDisposable:   v.IsDisposable,
+				IsRoleAccount:  v.IsRoleAccount,
+				IsCatchAll:     v.IsCatchAll,
+				IsDeliverable:  v.IsDeliverable,
+				CanConnectSmtp: v.CanConnectSmtp,
+				IsInboxFull:    v.IsInboxFull,
+				IsDisabled:     v.IsDisabled,
+				MxRecords: &api_prompt_email_verification.Result_MX{
+					AcceptsMail: v.MxRecords.AcceptsMail,
+					Records:     v.MxRecords.Records,
+				},
+			}},
+		}
 	default:
 		ciee, ok := present.(check_if_email_exist.DepPresenter)
 		if !ok {
@@ -80,6 +100,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 					IsDisabled:     ciee.SMTP.IsDisabled,
 				},
 				Syntax: &api_ciee.Syntax{
+					Address:       ciee.Syntax.Address,
 					Username:      ciee.Syntax.Username,
 					Domain:        ciee.Syntax.Domain,
 					IsValidSyntax: ciee.Syntax.IsValidSyntax,

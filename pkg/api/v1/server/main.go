@@ -7,6 +7,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -61,8 +62,9 @@ func runServer(quit chan bool) (*sync.WaitGroup, *errgroup.Group) {
 	instance := EVApiV1{
 		presenter: presenter.NewMultiplePresentersDefault(),
 		matching: map[v1.ResultType]preparer.Name{
-			v1.ResultType_CHECK_IF_EMAIL_EXIST: check_if_email_exist.Name,
-			v1.ResultType_MAIL_BOX_VALIDATOR:   mailboxvalidator.Name,
+			v1.ResultType_CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
+			v1.ResultType_MAIL_BOX_VALIDATOR:            mailboxvalidator.Name,
+			v1.ResultType_PROMPT_EMAIL_VERIFICATION_API: prompt_email_verification_api.Name,
 		},
 	}
 
