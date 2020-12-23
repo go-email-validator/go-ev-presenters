@@ -1,10 +1,13 @@
 package mailboxvalidator
 
 import (
+	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/contains"
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"strings"
 	"time"
 )
 
@@ -43,6 +46,18 @@ type DepPresenter struct {
 	CreditsAvailable      uint32        `json:"credits_available"`
 	ErrorCode             string        `json:"error_code"`
 	ErrorMessage          string        `json:"error_message"`
+}
+
+var emptyString = ""
+
+func EmailFromString(email string) email.EmailAddress {
+	pos := strings.LastIndex(email, "@")
+
+	if pos == -1 || len(email) < 3 {
+		return common.NewEmailAddress("", email, &emptyString)
+	}
+
+	return common.NewEmailAddress(email[:pos], email[pos+1:], nil)
 }
 
 type FuncCalculateScore func(presenter DepPresenter) float64
@@ -85,28 +100,43 @@ func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.Valida
 
 	smtpPresenter := common.SMTPPreparer{}.Prepare(email, validationResults[ev.SMTPValidatorName], nil).(common.SmtpPresenter)
 
+	isFree := !validationResults[ev.FreeValidatorName].IsValid()
+	isSyntax := validationResults[ev.SyntaxValidatorName].IsValid()
 	depPresenter = DepPresenter{
 		EmailAddress:     email.String(),
 		Domain:           email.Domain(),
-		IsFree:           validationResults[ev.FreeValidatorName].IsValid(),
-		IsSyntax:         validationResults[ev.SyntaxValidatorName].IsValid(),
+		IsFree:           isFree,
+		IsSyntax:         isSyntax,
 		IsDomain:         validationResults[ev.MXValidatorName].IsValid(),
 		IsSmtp:           smtpPresenter.CanConnectSmtp,
 		IsVerified:       smtpPresenter.IsDeliverable,
-		IsServerDown:     !smtpPresenter.CanConnectSmtp,
+		IsServerDown:     isSyntax && !smtpPresenter.CanConnectSmtp,
 		IsGreylisted:     smtpPresenter.IsGreyListed,
 		IsDisposable:     !validationResults[ev.DisposableValidatorName].IsValid(),
 		IsSuppressed:     !validationResults[ev.BlackListEmailsValidatorName].IsValid(), // TODO find more examples example@example.com
-		IsRole:           validationResults[ev.RoleValidatorName].IsValid(),
+		IsRole:           !validationResults[ev.RoleValidatorName].IsValid(),
 		IsHighRisk:       !validationResults[ev.BanWordsUsernameValidatorName].IsValid(), // TODO find more words
 		IsCatchall:       smtpPresenter.IsCatchAll,
 		TimeTaken:        opts.ExecutedTime(),
-		Status:           resultInterface.IsValid(), // valid or not use warning
 		CreditsAvailable: ^uint32(0),
-		ErrorCode:        "",
-		ErrorMessage:     "",
 	}
 
 	depPresenter.MailboxvalidatorScore = d.calculateScore(depPresenter)
+	depPresenter.Status = depPresenter.MailboxvalidatorScore >= 0.5
 	return depPresenter
+}
+
+func NewDepValidator() ev.Validator {
+	return ev.NewDepBuilder(nil).Set(
+		ev.BlackListEmailsValidatorName,
+		ev.NewBlackListEmailsValidator(contains.NewSet(hashset.New(
+			"example@example.com", "localhost@localhost",
+		))),
+	).Set(
+		ev.BanWordsUsernameValidatorName,
+		ev.NewBanWordsUsername(contains.NewInStringsFromArray([]string{"test"})),
+	).Set(
+		ev.FreeValidatorName,
+		ev.FreeDefaultValidator(),
+	).Build()
 }

@@ -3,9 +3,7 @@ package presenter
 import (
 	"errors"
 	"fmt"
-	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/contains"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
@@ -17,25 +15,17 @@ import (
 func NewMultiplePresentersDefault() MultiplePresenter {
 	return MultiplePresenter{map[preparer.Name]Presenter{
 		check_if_email_exist.Name: NewPresenter(
+			ev_email.EmailFromString,
 			ev.NewDepBuilder(nil).Build(),
 			check_if_email_exist.NewDepPreparerDefault(),
 		),
 		mailboxvalidator.Name: NewPresenter(
-			ev.NewDepBuilder(nil).Set(
-				ev.BlackListEmailsValidatorName,
-				ev.NewBlackListEmailsValidator(contains.NewSet(hashset.New(
-					"example@example.com", "localhost@localhost",
-				))),
-			).Set(
-				ev.BanWordsUsernameValidatorName,
-				ev.NewBanWordsUsername(contains.NewInStringsFromArray([]string{"test"})),
-			).Set(
-				ev.FreeValidatorName,
-				ev.FreeDefaultValidator(),
-			).Build(),
+			mailboxvalidator.EmailFromString,
+			mailboxvalidator.NewDepValidator(),
 			mailboxvalidator.NewDepPreparerForViewDefault(),
 		),
 		prompt_email_verification_api.Name: NewPresenter(
+			ev_email.EmailFromString,
 			ev.NewDepBuilder(nil).Build(),
 			prompt_email_verification_api.NewDepPreparerDefault(),
 		),
@@ -46,7 +36,7 @@ type MultiplePresenter struct {
 	presenters map[preparer.Name]Presenter
 }
 
-func (p MultiplePresenter) SingleValidation(email ev_email.EmailAddress, name preparer.Name) (interface{}, error) {
+func (p MultiplePresenter) SingleValidation(email string, name preparer.Name) (interface{}, error) {
 	prep, ok := p.presenters[name]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("preparer with name %s does not exist", name))
@@ -55,22 +45,28 @@ func (p MultiplePresenter) SingleValidation(email ev_email.EmailAddress, name pr
 	return prep.SingleValidation(email)
 }
 
-func NewPresenter(validator ev.Validator, preparer preparer.Interface) Presenter {
+type GetEmail func(email string) ev_email.EmailAddress
+
+func NewPresenter(getEmail GetEmail, validator ev.Validator, preparer preparer.Interface) Presenter {
 	return Presenter{
+		getEmail:  getEmail,
 		validator: validator,
 		preparer:  preparer,
 	}
 }
 
 type Presenter struct {
+	getEmail  func(email string) ev_email.EmailAddress
 	validator ev.Validator
 	preparer  preparer.Interface
 }
 
-func (p Presenter) SingleValidation(email ev_email.EmailAddress) (interface{}, error) {
+func (p Presenter) SingleValidation(email string) (interface{}, error) {
+	address := p.getEmail(email)
+
 	start := time.Now()
-	validationResult := p.validator.Validate(email)
+	validationResult := p.validator.Validate(address)
 	elapsed := time.Since(start)
 
-	return p.preparer.Prepare(email, validationResult, preparer.NewOptions(elapsed)), nil
+	return p.preparer.Prepare(address, validationResult, preparer.NewOptions(elapsed)), nil
 }

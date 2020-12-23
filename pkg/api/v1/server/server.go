@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	api_ciee "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist"
 	api_mbv "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/mailboxvalidator"
@@ -24,7 +23,7 @@ type EVApiV1 struct {
 func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (*v1.EmailResponse, error) {
 	var response v1.EmailResponse
 
-	present, err := e.presenter.SingleValidation(ev_email.EmailFromString(request.Email), e.matching[request.ResultType])
+	present, err := e.presenter.SingleValidation(request.Email, e.matching[request.ResultType])
 	if err != nil {
 		return nil, err
 	}

@@ -52,11 +52,20 @@ func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, 
 	errs = append(errs, result.Warnings()...)
 	for _, err := range errs {
 		if !errors.As(err, &smtpError) {
+			if errors.As(err, &ev.DepsError{}) {
+				return FalseSMTPPresenter
+			}
 			continue
 		}
 
 		errString = strings.ToLower(smtpError.Err().Error())
-		errCode = smtpError.Err().(*textproto.Error).Code
+
+		switch v := smtpError.Err().(type) {
+		case *textproto.Error:
+			errCode = v.Code
+		default:
+			errCode = 0
+		}
 		if strings.Contains(errString, "greylist") {
 			presenter.IsGreyListed = true
 		}
