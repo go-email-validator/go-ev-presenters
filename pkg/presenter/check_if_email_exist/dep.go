@@ -7,6 +7,9 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
 
+// TODO create transfer from DepPresenterForView to DepPresenter
+///go:generate go run cmd/dep_test_generator/gen.go
+
 const Name preparer.Name = "CheckIfEmailExist"
 
 type miscPresenter struct {
@@ -22,6 +25,7 @@ type DepPresenter struct {
 	MX          mxPresenter          `json:"mx"`
 	SMTP        common.SmtpPresenter `json:"smtp"`
 	Syntax      syntaxPresenter      `json:"syntax"`
+	Error       string               `json:"error"`
 }
 
 type FuncAvailability func(depPresenter DepPresenter) Availability

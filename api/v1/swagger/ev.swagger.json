@@ -170,6 +170,9 @@
         },
         "syntax": {
           "$ref": "#/definitions/check_if_email_existSyntax"
+        },
+        "error": {
+          "type": "string"
         }
       }
     },
@@ -271,6 +274,9 @@
         },
         "syntax_valid": {
           "type": "boolean"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },

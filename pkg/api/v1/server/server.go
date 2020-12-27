@@ -71,6 +71,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 					AcceptsMail: v.MxRecords.AcceptsMail,
 					Records:     v.MxRecords.Records,
 				},
+				Message: v.Message,
 			}},
 		}
 	default:
@@ -104,6 +105,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 					Domain:        ciee.Syntax.Domain,
 					IsValidSyntax: ciee.Syntax.IsValidSyntax,
 				},
+				Error: ciee.Error,
 			},
 		},
 		}

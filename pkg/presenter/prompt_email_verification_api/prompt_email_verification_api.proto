@@ -15,6 +15,7 @@ message Result {
   bool is_role_account = 8 [json_name = "is_role_account"];
   MX mx_records = 9 [json_name = "mx_records"];
   bool syntax_valid = 10 [json_name = "syntax_valid"];
+  string message = 11 [json_name = "message"];
   message MX {
     bool accepts_mail = 1 [json_name = "accepts_mail"];
     repeated  string records = 2 [json_name = "records"];

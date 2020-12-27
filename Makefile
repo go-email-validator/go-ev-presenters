@@ -75,3 +75,6 @@ go.build:
 
 go.test:
 	go test ./pkg/... -race -covermode=atomic
+
+go.generate:
+	go generate ./...

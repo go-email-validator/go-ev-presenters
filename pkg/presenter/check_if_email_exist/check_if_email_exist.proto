@@ -11,6 +11,7 @@ message Result {
   MX mx = 4 [json_name = "mx"];
   SMTP smtp = 5 [json_name = "smtp"];
   Syntax syntax = 6 [json_name = "syntax"];
+  string error = 7 [json_name = "error"];
 }
 
 message Misc {

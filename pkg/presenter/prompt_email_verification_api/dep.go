@@ -7,6 +7,8 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
 
+//go:generate go run cmd/dep_test_generator/gen.go
+
 const (
 	Name preparer.Name = "PromptEmailVerificationApi"
 )
@@ -28,6 +30,7 @@ type DepPresenter struct {
 	IsInboxFull    bool   `json:"is_inbox_full"`
 	IsDisabled     bool   `json:"is_disabled"`
 	MxRecords      mx     `json:"mx_records"`
+	Message        string `json:"message"`
 }
 
 func NewDepPreparerDefault() DepPreparer {

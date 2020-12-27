@@ -5,6 +5,35 @@ import (
 	"strings"
 )
 
+func EmailsForTests() []string {
+	return []string{
+		"asdas.da2da",
+		"asdas.dada",
+		"asd@asd@asd",
+		"zxczxczxc@joycasinoru",
+		"sewag33689@gmail.com",
+		"user99.doesnot.exist@gmail.com",
+		"amazedfuckporno@gmail.com",
+		"sewag33689@itymail.com",
+		"derduzikne@nedoz.com",
+		"tvzamhkdc@emlhub.com",
+		"theofanis.giot2is@12pm.gr",
+		"theofanisgiotis@12pm.gr",
+		"asdasd@tradepro.net",
+		"credit@mail.ru",
+		"salestrade86@hotmail.com",
+		"some.user.99@gmail.com",
+		"monicaramirezrestrepo@hotmail.com",
+		"admin@gmail.com",
+		"name@yandex.ru",
+		"admin@huntgear.ru",
+		"go.email.validator@gmail.com",
+		"radmal1982@yandex-team.ru",
+		"pr@yandex-team.ru",
+		"y-numata@senko.ed.jp",
+	}
+}
+
 func NewEmailAddress(username, domain string, at *string) ev_email.EmailAddress {
 	return emailAddress{
 		username: strings.ToLower(username),

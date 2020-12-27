@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+//go:generate go run cmd/dep_test_generator/gen.go
+
 const (
 	Name preparer.Name = "MailBoxValidator"
 
@@ -51,7 +53,7 @@ type DepPresenter struct {
 var emptyString = ""
 
 func EmailFromString(email string) email.EmailAddress {
-	pos := strings.LastIndex(email, "@")
+	pos := strings.LastIndexByte(email, '@')
 
 	if pos == -1 || len(email) < 3 {
 		return common.NewEmailAddress("", email, &emptyString)

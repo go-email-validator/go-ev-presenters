@@ -43,7 +43,7 @@ func CalculateScore(presenter DepPresenter) float64 {
 		score = minScore
 	}
 
-	pos := strings.Index(presenter.EmailAddress, "@")
+	pos := strings.IndexByte(presenter.EmailAddress, '@')
 	if pos == -1 {
 		pos = len(presenter.EmailAddress) - 1
 	}
