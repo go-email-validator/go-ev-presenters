@@ -4,6 +4,8 @@ package github.com.go_email_validator.go_ev_presenters.pkg.presenters.check_if_e
 
 option go_package = "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist";
 
+import "google/protobuf/wrappers.proto";
+
 message Result {
   string input = 1 [json_name = "input"];
   string is_reachable = 2 [json_name = "is_reachable"];
@@ -33,7 +35,7 @@ message SMTP {
 }
 
 message Syntax {
-  string address = 1 [json_name = "username"];
+  google.protobuf.StringValue address = 1 [json_name = "address"];
   string domain = 2 [json_name = "domain"];
   bool is_valid_syntax = 3 [json_name = "is_valid_syntax"];
   string username = 4 [json_name = "username"];

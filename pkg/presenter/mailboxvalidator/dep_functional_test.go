@@ -1,24 +1,19 @@
 package mailboxvalidator
 
 import (
-	"flag"
 	"github.com/emirpasic/gods/sets/hashset"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/test_utils"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"reflect"
 	"testing"
 )
 
-var functional = flag.Bool("functional", false, "run functional tests")
-
-func FunctionalSkip(t *testing.T) {
-	flag.Parse()
-	if !*functional {
-		t.Skip()
-	}
+func TestMain(m *testing.M) {
+	test_utils.TestMain(m)
 }
 
 func TestDepPreparer_Functional_Prepare(t *testing.T) {
-	FunctionalSkip(t)
+	test_utils.FunctionalSkip(t)
 
 	validator := NewDepValidator()
 	d := NewDepPreparerDefault()
@@ -49,7 +44,7 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 
 			resultValidator := validator.Validate(email)
 			if gotResult := d.Prepare(email, resultValidator, opts); !reflect.DeepEqual(gotResult, tt) {
-				t.Errorf("Prepare()\n%v, \n want\n%v", gotResult, tt)
+				t.Errorf("Prepare()\n%#v, \n want\n%#v", gotResult, tt)
 			}
 		})
 	}

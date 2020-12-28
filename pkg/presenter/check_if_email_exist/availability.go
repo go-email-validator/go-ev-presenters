@@ -1,7 +1,5 @@
 package check_if_email_exist
 
-import "github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
-
 type Availability string
 
 func (a Availability) String() string {
@@ -16,21 +14,21 @@ const (
 )
 
 func CalculateAvailability(depPresenter DepPresenter) Availability {
-	if depPresenter.SMTP != common.FalseSMTPPresenter {
-		if depPresenter.Misc.IsDisposable ||
-			depPresenter.Misc.IsRoleAccount ||
-			depPresenter.SMTP.IsCatchAll ||
-			depPresenter.SMTP.HasFullInbox {
-			return Risky
-		}
-
-		if !depPresenter.SMTP.IsDeliverable ||
-			!depPresenter.SMTP.CanConnectSmtp ||
-			depPresenter.SMTP.IsDisabled {
-			return Invalid
-		}
-
-		return Safe
+	if depPresenter.Misc.IsDisposable ||
+		depPresenter.Misc.IsRoleAccount ||
+		depPresenter.SMTP.IsCatchAll ||
+		depPresenter.SMTP.HasFullInbox {
+		return Risky
 	}
-	return Unknown
+
+	if !depPresenter.SMTP.IsDeliverable ||
+		!depPresenter.SMTP.CanConnectSmtp ||
+		depPresenter.SMTP.IsDisabled {
+		return Invalid
+	}
+	return Safe
+	/*
+		TODO run rust code to understand when Unknown should be used
+		return Unknown
+	*/
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
+	"github.com/golang/protobuf/ptypes/wrappers"
 )
 
 type EVApiV1 struct {
@@ -80,6 +81,12 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 			return nil, errors.New("invalid ResultType")
 		}
 
+		var address *wrappers.StringValue
+		if ciee.Syntax.Address == nil {
+			address = nil
+		} else {
+			address = &wrappers.StringValue{Value: *ciee.Syntax.Address}
+		}
 		response = v1.EmailResponse{Result: &v1.EmailResponse_CheckIfEmailExist{
 			CheckIfEmailExist: &api_ciee.Result{
 				Input:       ciee.Input,
@@ -100,7 +107,7 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 					IsDisabled:     ciee.SMTP.IsDisabled,
 				},
 				Syntax: &api_ciee.Syntax{
-					Address:       ciee.Syntax.Address,
+					Address:       address,
 					Username:      ciee.Syntax.Username,
 					Domain:        ciee.Syntax.Domain,
 					IsValidSyntax: ciee.Syntax.IsValidSyntax,

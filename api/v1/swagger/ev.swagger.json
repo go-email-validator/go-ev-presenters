@@ -125,6 +125,9 @@
     "check_if_email_existSyntax": {
       "type": "object",
       "properties": {
+        "address": {
+          "type": "string"
+        },
         "domain": {
           "type": "string"
         },

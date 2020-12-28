@@ -74,6 +74,9 @@ go.build:
 	go build ./pkg/...
 
 go.test:
+	go test ./pkg/... -race -covermode=atomic -func
+
+go.test.unit:
 	go test ./pkg/... -race -covermode=atomic
 
 go.generate:

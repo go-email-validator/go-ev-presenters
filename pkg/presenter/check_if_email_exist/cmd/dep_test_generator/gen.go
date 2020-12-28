@@ -1,4 +1,5 @@
 // +build ignore
+
 package main
 
 import (
@@ -24,7 +25,7 @@ func main() {
 	var bodyBytes []byte
 	var err error
 	var dep ciee.DepPresenter
-	emails := common.EmailsForTests()
+	emails := common.EmailsForTests()[2:5]
 	deps := make([]interface{}, len(emails))
 
 	apiKey := os.Getenv("CHECK_IF_EMAIL_EXIST")

@@ -16,7 +16,7 @@ func NewMultiplePresentersDefault() MultiplePresenter {
 	return MultiplePresenter{map[preparer.Name]Presenter{
 		check_if_email_exist.Name: NewPresenter(
 			ev_email.EmailFromString,
-			ev.NewDepBuilder(nil).Build(),
+			check_if_email_exist.NewDepValidator(),
 			check_if_email_exist.NewDepPreparerDefault(),
 		),
 		mailboxvalidator.Name: NewPresenter(

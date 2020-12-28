@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/test_utils"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -15,6 +16,10 @@ import (
 const (
 	defaultEmail = "go.email.validator@gmail.com"
 )
+
+func TestMain(m *testing.M) {
+	test_utils.TestMain(m)
+}
 
 func TestServer_HTTP(t *testing.T) {
 	quit := make(chan bool)

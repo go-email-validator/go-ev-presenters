@@ -7,10 +7,10 @@ import (
 )
 
 type syntaxPresenter struct {
-	Address       string `json:"address"`
-	Username      string `json:"username"`
-	Domain        string `json:"domain"`
-	IsValidSyntax bool   `json:"is_valid_syntax"`
+	Address       *string `json:"address"`
+	Username      string  `json:"username"`
+	Domain        string  `json:"domain"`
+	IsValidSyntax bool    `json:"is_valid_syntax"`
 }
 
 type SyntaxPreparer struct{}
@@ -20,10 +20,14 @@ func (_ SyntaxPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationRes
 }
 
 func (_ SyntaxPreparer) Prepare(email email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
-	return syntaxPresenter{
-		email.String(),
-		email.Username(),
-		email.Domain(),
-		result.IsValid(),
+	presenter := syntaxPresenter{}
+
+	if result.IsValid() {
+		address := email.String()
+		presenter.Address = &address
+		presenter.Username = email.Username()
+		presenter.Domain = email.Domain()
+		presenter.IsValidSyntax = result.IsValid()
 	}
+	return presenter
 }

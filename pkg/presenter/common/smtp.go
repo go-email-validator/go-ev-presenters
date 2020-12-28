@@ -58,9 +58,10 @@ func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, 
 			continue
 		}
 
-		errString = strings.ToLower(smtpError.Err().Error())
+		sourceErr := errors.Unwrap(smtpError)
+		errString = strings.ToLower(sourceErr.Error())
 
-		switch v := smtpError.Err().(type) {
+		switch v := sourceErr.(type) {
 		case *textproto.Error:
 			errCode = v.Code
 		default:
