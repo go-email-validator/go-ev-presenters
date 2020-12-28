@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	ciee "github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common/dep_fixture_generator"
 	"io/ioutil"
@@ -24,7 +23,6 @@ const (
 func main() {
 	var bodyBytes []byte
 	var err error
-	var dep ciee.DepPresenter
 	emails := common.EmailsForTests()[2:5]
 	deps := make([]interface{}, len(emails))
 
@@ -55,6 +53,7 @@ func main() {
 			die(err)
 		}()
 
+		var dep ciee.DepPresenter
 		err = json.Unmarshal(bodyBytes, &dep)
 		die(err)
 

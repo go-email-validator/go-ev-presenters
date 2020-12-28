@@ -10,7 +10,8 @@ import (
 //go:generate go run cmd/dep_test_generator/gen.go
 
 const (
-	Name preparer.Name = "PromptEmailVerificationApi"
+	Name               preparer.Name = "PromptEmailVerificationApi"
+	ErrorSyntaxInvalid               = "Invalid email syntax."
 )
 
 type mx struct {
@@ -48,15 +49,22 @@ func (_ DepPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult
 }
 
 func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.ValidationResult, _ preparer.Options) (result interface{}) {
+	var message string
 	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()
 	mxResult := validationResults[ev.MXValidatorName].(ev.MXValidationResult)
 
 	smtpPresenter := common.SMTPPreparer{}.Prepare(email, validationResults[ev.SMTPValidatorName], nil).(common.SmtpPresenter)
 
+	Email := email.String()
+	isSyntaxValid := validationResults[ev.SyntaxValidatorName].IsValid()
+	if !isSyntaxValid && len(Email) == 0 {
+		message = ErrorSyntaxInvalid
+	}
+
 	depPresenter := DepPresenter{
-		Email:          email.String(),
-		SyntaxValid:    validationResults[ev.SyntaxValidatorName].IsValid(),
+		Email:          Email,
+		SyntaxValid:    isSyntaxValid,
 		IsDisposable:   !validationResults[ev.DisposableValidatorName].IsValid(),
 		IsRoleAccount:  !validationResults[ev.RoleValidatorName].IsValid(),
 		IsCatchAll:     smtpPresenter.IsCatchAll,
@@ -68,7 +76,15 @@ func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.Valida
 			AcceptsMail: mxResult.IsValid(),
 			Records:     common.MX2String(mxResult.MX()),
 		},
+		Message: message,
 	}
 
 	return depPresenter
+}
+
+func NewDepValidator() ev.Validator {
+	return ev.NewDepBuilder(nil).Set(
+		ev.SyntaxValidatorName,
+		common.NewSyntaxValidator(),
+	).Build()
 }

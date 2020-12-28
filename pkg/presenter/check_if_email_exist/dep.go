@@ -3,7 +3,6 @@ package check_if_email_exist
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist/validator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
@@ -89,6 +88,6 @@ func (s DepPreparer) Prepare(email email.EmailAddress, result ev.ValidationResul
 func NewDepValidator() ev.Validator {
 	return ev.NewDepBuilder(nil).Set(
 		ev.SyntaxValidatorName,
-		validator.NewSyntaxValidator(),
+		common.NewSyntaxValidator(),
 	).Build()
 }

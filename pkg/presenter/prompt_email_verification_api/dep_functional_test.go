@@ -1,10 +1,70 @@
 package prompt_email_verification_api
 
 import (
+	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/test_utils"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"reflect"
+	"sort"
 	"testing"
 )
 
 func TestMain(m *testing.M) {
 	test_utils.TestMain(m)
+}
+
+func TestDepPreparer_Prepare(t *testing.T) {
+	//test_utils.FunctionalSkip(t)
+
+	validator := NewDepValidator()
+	d := NewDepPreparerDefault()
+	tests := depPresenters()
+
+	// Some data or functional cannot be matched, see more nearby DepPresenter of emails
+	skipEmail := hashset.New(
+		// Banned on disposable domain
+		"sewag33689@itymail.com",
+		// Banned on disposable domain
+		"sewag33689@itymail.com",
+		// Banned on disposable domain
+		"asdasd@tradepro.net",
+		// Banned on disposable domain
+		"tvzamhkdc@emlhub.com",
+		// Banned
+		"credit@mail.ru",
+		// Banned
+		"salestrade86@hotmail.com",
+		// Banned
+		"monicaramirezrestrepo@hotmail.com",
+		// TODO Cannot connect from my hosts pc
+		"y-numata@senko.ed.jp",
+	)
+
+	opts := preparer.NewOptions(0)
+	for _, tt := range tests {
+		if skipEmail.Contains(tt.Email) {
+			t.Logf("skipped %v", tt.Email)
+			continue
+		}
+
+		t.Run(tt.Email, func(t *testing.T) {
+			email := EmailFromString(tt.Email)
+
+			resultValidator := validator.Validate(email)
+			got := d.Prepare(email, resultValidator, opts)
+			gotPresenter := got.(DepPresenter)
+
+			sort.Strings(gotPresenter.MxRecords.Records)
+			sort.Strings(tt.Dep.MxRecords.Records)
+			if !reflect.DeepEqual(got, tt.Dep) {
+				t.Errorf("Prepare()\n%#v, \n want\n%#v", got, tt.Dep)
+			}
+		})
+	}
+}
+
+// see /pkg/presenter/prompt_email_verification_api/cmd/dep_test_generator/gen.go
+type DepPresenterTest struct {
+	Email string
+	Dep   DepPresenter
 }

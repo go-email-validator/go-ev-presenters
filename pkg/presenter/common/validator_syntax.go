@@ -1,4 +1,5 @@
-package validator
+// TODO move to go-email-validator, do emailRegex changeable
+package common
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"

@@ -17,14 +17,19 @@ import (
 )
 
 const (
-	presenterName = "DepPresenter"
+	presenterName = "DepPresenterTest"
 	packageName   = "prompt_email_verification_api"
 )
+
+// see /pkg/presenter/prompt_email_verification_api/dep_functional_test.go
+type DepPresenterTest struct {
+	Email string
+	Dep   prompt_email_verification_api.DepPresenter
+}
 
 func main() {
 	var bodyBytes []byte
 	var err error
-	var dep prompt_email_verification_api.DepPresenter
 	emails := common.EmailsForTests()
 	deps := make([]interface{}, len(emails))
 
@@ -50,17 +55,20 @@ func main() {
 			die(err)
 		}()
 
+		var depTest DepPresenterTest
+		var dep prompt_email_verification_api.DepPresenter
 		err = json.Unmarshal(bodyBytes, &dep)
 		die(err)
 
-		if !strings.Contains(dep.Message, "API rate limit") {
+		if strings.Contains(dep.Message, "API rate limit") {
 			panic(fmt.Sprint(email, dep.Message))
 		}
+		depTest = DepPresenterTest{Email: email, Dep: dep}
 
-		deps[i] = dep
+		deps[i] = depTest
 	}
 
-	f, err := os.Create("dep_fixture_test.go")
+	f, err := os.Create("dep_fixture2_test.go")
 	die(err)
 	defer f.Close()
 

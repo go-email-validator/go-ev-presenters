@@ -25,8 +25,8 @@ func NewMultiplePresentersDefault() MultiplePresenter {
 			mailboxvalidator.NewDepPreparerForViewDefault(),
 		),
 		prompt_email_verification_api.Name: NewPresenter(
-			ev_email.EmailFromString,
-			ev.NewDepBuilder(nil).Build(),
+			prompt_email_verification_api.EmailFromString,
+			prompt_email_verification_api.NewDepValidator(),
 			prompt_email_verification_api.NewDepPreparerDefault(),
 		),
 	}}

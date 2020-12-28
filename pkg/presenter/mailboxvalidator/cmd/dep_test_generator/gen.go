@@ -25,7 +25,6 @@ const (
 func main() {
 	var bodyBytes []byte
 	var err error
-	var dep mailboxvalidator.DepPresenterForView
 	emails := common.EmailsForTests()[0:1]
 	deps := make([]interface{}, len(emails))
 
@@ -53,6 +52,7 @@ func main() {
 			die(err)
 		}()
 
+		var dep mailboxvalidator.DepPresenterForView
 		err = json.Unmarshal(bodyBytes, &dep)
 		die(err)
 
