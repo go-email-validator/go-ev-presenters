@@ -3,8 +3,8 @@ package common
 import (
 	"errors"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/smtp_checker"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"net/textproto"
 	"strings"
@@ -38,13 +38,13 @@ var FalseSMTPPresenter = SmtpPresenter{
 
 type SMTPPreparer struct{}
 
-func (_ SMTPPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
+func (SMTPPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.SMTPValidatorName
 }
 
-func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) interface{} {
+func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ preparer.Options) interface{} {
 	var presenter = WithoutErrsSMTPPresenter
-	var smtpError smtp_checker.SMTPError
+	var smtpError evsmtp.Error
 	var errString string
 	var errCode int
 
@@ -72,15 +72,15 @@ func (_ SMTPPreparer) Prepare(_ email.EmailAddress, result ev.ValidationResult, 
 		}
 
 		switch smtpError.Stage() {
-		case smtp_checker.ConnectionStage:
+		case evsmtp.ConnectionStage:
 			presenter = FalseSMTPPresenter
-		case smtp_checker.HelloStage,
-			smtp_checker.AuthStage,
-			smtp_checker.MailStage:
+		case evsmtp.HelloStage,
+			evsmtp.AuthStage,
+			evsmtp.MailStage:
 			presenter.IsDeliverable = false
-		case smtp_checker.RandomRCPTStage:
+		case evsmtp.RandomRCPTStage:
 			presenter.IsCatchAll = false
-		case smtp_checker.RCPTStage:
+		case evsmtp.RCPTStage:
 			presenter.IsDeliverable = false
 			switch {
 			case strings.Contains(errString, "disabled") ||

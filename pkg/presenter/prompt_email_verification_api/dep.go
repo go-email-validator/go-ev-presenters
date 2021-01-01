@@ -2,7 +2,7 @@ package prompt_email_verification_api
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
@@ -44,11 +44,11 @@ func NewDepPreparer() DepPreparer {
 
 type DepPreparer struct{}
 
-func (_ DepPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
+func (DepPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.DepValidatorName
 }
 
-func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.ValidationResult, _ preparer.Options) (result interface{}) {
+func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.ValidationResult, _ preparer.Options) (result interface{}) {
 	var message string
 	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()

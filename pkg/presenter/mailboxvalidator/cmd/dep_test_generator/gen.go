@@ -6,27 +6,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common/dep_fixture_generator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/addition"
 	"github.com/joho/godotenv"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"time"
-)
-
-const (
-	presenterName = "DepPresenterForView"
-	packageName   = "mailboxvalidator"
 )
 
 func main() {
 	var bodyBytes []byte
 	var err error
-	emails := common.EmailsForTests()[0:1]
+	emails := common.EmailsForTests()
 	deps := make([]interface{}, len(emails))
+	depsForView := make([]interface{}, len(emails))
 
 	err = godotenv.Load()
 	die(err)
@@ -52,28 +47,48 @@ func main() {
 			die(err)
 		}()
 
-		var dep mailboxvalidator.DepPresenterForView
-		err = json.Unmarshal(bodyBytes, &dep)
+		var depForView mailboxvalidator.DepPresenterForView
+		var depFor mailboxvalidator.DepPresenter
+		err = json.Unmarshal(bodyBytes, &depForView)
 		die(err)
 
-		if dep.ErrorCode != "" {
-			panic(fmt.Sprint(email, dep.ErrorMessage))
+		depFor.IsFree = mailboxvalidator.ToBool(depForView.IsFree)
+		depFor.IsSyntax = mailboxvalidator.ToBool(depForView.IsSyntax)
+		depFor.IsDomain = mailboxvalidator.ToBool(depForView.IsDomain)
+		depFor.IsSmtp = mailboxvalidator.ToBool(depForView.IsSmtp)
+		depFor.IsVerified = mailboxvalidator.ToBool(depForView.IsVerified)
+		depFor.IsServerDown = mailboxvalidator.ToBool(depForView.IsServerDown)
+		depFor.IsGreylisted = mailboxvalidator.ToBool(depForView.IsGreylisted)
+		depFor.IsDisposable = mailboxvalidator.ToBool(depForView.IsDisposable)
+		depFor.IsSuppressed = mailboxvalidator.ToBool(depForView.IsSuppressed)
+		depFor.IsRole = mailboxvalidator.ToBool(depForView.IsRole)
+		depFor.IsHighRisk = mailboxvalidator.ToBool(depForView.IsHighRisk)
+		depFor.Status = mailboxvalidator.ToBool(depForView.Status)
+
+		if depForView.ErrorCode != "" {
+			panic(fmt.Sprint(email, depForView.ErrorMessage))
 		}
 
-		deps[i] = dep
+		depsForView[i] = depForView
 	}
 
-	// TODO need convert from DepPresenterForView to DepPresenter
-	f, err := os.Create("dep_fixture_test2.go")
+	f, err := os.Create(common.DefaultDepFixtureFile)
 	die(err)
 	defer f.Close()
 
-	dep_fixture_generator.PackageTemplate.Execute(f, dep_fixture_generator.Template{
-		Timestamp:     time.Now(),
-		PackageName:   packageName,
-		PresenterName: presenterName,
-		Presenters:    deps,
-	})
+	bytes, err := json.MarshalIndent(deps, "", "  ")
+	die(err)
+	_, err = f.Write(bytes)
+	die(err)
+
+	fForView, err := os.Create(addition.DepFixtureForViewFile)
+	die(err)
+	defer fForView.Close()
+
+	bytes, err := json.MarshalIndent(depsForView, "", "  ")
+	die(err)
+	_, err = f.Write(bytes)
+	die(err)
 }
 
 func die(err error) {

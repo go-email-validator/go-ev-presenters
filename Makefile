@@ -1,6 +1,7 @@
 API_PKG_PATH = pkg/api/v1/
 VERSION=0.0.1
 IMAGE=go-email-validator
+COVERAGE_FILE="coverage.out"
 
 protoc.go:
 	protoc \
@@ -45,8 +46,12 @@ generate.openapi:
  	-i $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/api/v1/openapiv3/ev.yaml \
  	-o $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/api/v1/openapiv3/ \
 
+VERSION_PATH := go-email-validator@v0.0.0-20201230093638-bf1171dc7c9e/
+MOUNT_PATH := `go env GOMODCACHE`/github.com/go-email-validator/
 mount:
-	sudo mount --bind  ~/go/src/github.com/go-email-validator/go-email-validator/ $(pwd)/go-email-validator@v0.0.0-20201213070521-ef1574b892a9
+	rm -fr $(MOUNT_PATH)$(VERSION_PATH)
+	mkdir -p $(MOUNT_PATH)$(VERSION_PATH)
+	sudo mount -Br ~/go/src/github.com/go-email-validator/go-email-validator/ $(MOUNT_PATH)$(VERSION_PATH)
 
 grpc.server:
 	go run pkg/api/v1/server/main.go
@@ -74,10 +79,19 @@ go.build:
 	go build ./pkg/...
 
 go.test:
-	go test ./pkg/... -race -covermode=atomic -func
+	go test ./pkg/... -race -covermode=atomic -func -coverprofile=$(COVERAGE_FILE)
 
 go.test.unit:
-	go test ./pkg/... -race -covermode=atomic
+	go test ./pkg/... -race -covermode=atomic -coverprofile=$(COVERAGE_FILE)
 
 go.generate:
 	go generate ./...
+
+GO_COVER=go tool cover -func=$(COVERAGE_FILE)
+go.cover:
+	$(GO_COVER)
+
+go.cover.full: go.test go.cover
+
+go.cover.total:
+	$(GO_COVER) | grep total | awk '{print substr($$3, 1, length($$3)-1)}'

@@ -2,8 +2,9 @@ package check_if_email_exist
 
 import (
 	"github.com/emirpasic/gods/sets/hashset"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/test_utils"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"reflect"
 	"sort"
@@ -11,15 +12,17 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	test_utils.TestMain(m)
+	evtests.TestMain(m)
 }
 
 func TestDepPreparer_Prepare(t *testing.T) {
-	test_utils.FunctionalSkip(t)
+	evtests.FunctionalSkip(t)
 
 	validator := NewDepValidator()
 	d := NewDepPreparerDefault()
-	tests := depPresenters()
+
+	tests := make([]DepPresenter, 0)
+	common.TestDepPresenters(t, &tests, "")
 
 	// Some data or functional cannot be matched, see more nearby DepPresenter of emails
 	skipEmail := hashset.New(
@@ -46,7 +49,7 @@ func TestDepPreparer_Prepare(t *testing.T) {
 		}
 
 		t.Run(tt.Input, func(t *testing.T) {
-			email := ev_email.EmailFromString(tt.Input)
+			email := evmail.FromString(tt.Input)
 
 			resultValidator := validator.Validate(email)
 			got := d.Prepare(email, resultValidator, opts)

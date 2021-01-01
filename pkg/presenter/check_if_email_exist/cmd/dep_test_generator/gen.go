@@ -6,25 +6,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common/dep_fixture_generator"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
-const (
-	presenterName = "DepPresenter"
-	packageName   = "check_if_email_exist"
-)
-
+// TODO DRY for gen fixtures
 func main() {
 	var bodyBytes []byte
 	var err error
-	emails := common.EmailsForTests()[2:5]
+	emails := common.EmailsForTests()
 	deps := make([]interface{}, len(emails))
+
+	err = godotenv.Load()
+	die(err)
 
 	apiKey := os.Getenv("CHECK_IF_EMAIL_EXIST")
 
@@ -53,7 +51,7 @@ func main() {
 			die(err)
 		}()
 
-		var dep ciee.DepPresenter
+		var dep check_if_email_exist.DepPresenter
 		err = json.Unmarshal(bodyBytes, &dep)
 		die(err)
 
@@ -64,18 +62,14 @@ func main() {
 		deps[i] = dep
 	}
 
-	f, err := os.Create("dep_fixture_test.go")
+	f, err := os.Create(common.DefaultDepFixtureFile)
 	die(err)
 	defer f.Close()
 
-	data := dep_fixture_generator.Template{
-		Timestamp:     time.Now(),
-		PackageName:   packageName,
-		PresenterName: presenterName,
-		Presenters:    deps,
-		Import:        "import \"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common\"",
-	}
-	die(dep_fixture_generator.PackageTemplate.Execute(f, data))
+	bytes, err := json.MarshalIndent(deps, "", "  ")
+	die(err)
+	_, err = f.Write(bytes)
+	die(err)
 }
 
 func die(err error) {

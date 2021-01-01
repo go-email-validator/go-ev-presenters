@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
-	api_ciee "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist"
-	api_mbv "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/mailboxvalidator"
+	apiciee "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist"
+	apimbv "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/mailboxvalidator"
 	api_prompt_email_verification "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/prompt_email_verification_api"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
@@ -22,7 +22,7 @@ type EVApiV1 struct {
 }
 
 func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (*v1.EmailResponse, error) {
-	var response v1.EmailResponse
+	var response *v1.EmailResponse
 
 	present, err := e.presenter.SingleValidation(request.Email, e.matching[request.ResultType])
 	if err != nil {
@@ -31,8 +31,8 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 
 	switch v := present.(type) {
 	case mailboxvalidator.DepPresenterForView:
-		response = v1.EmailResponse{Result: &v1.EmailResponse_MailBoxValidator{
-			MailBoxValidator: &api_mbv.Result{
+		response = &v1.EmailResponse{Result: &v1.EmailResponse_MailBoxValidator{
+			MailBoxValidator: &apimbv.Result{
 				EmailAddress:          v.EmailAddress,
 				Domain:                v.Domain,
 				IsFree:                v.IsFree,
@@ -57,66 +57,63 @@ func (e EVApiV1) SingleValidation(_ context.Context, request *v1.EmailRequest) (
 		},
 		}
 	case prompt_email_verification_api.DepPresenter:
-		response = v1.EmailResponse{Result: &v1.EmailResponse_PromptEmailVerificationApi{
+		response = &v1.EmailResponse{Result: &v1.EmailResponse_PromptEmailVerificationApi{
 			PromptEmailVerificationApi: &api_prompt_email_verification.Result{
+				CanConnectSmtp: v.CanConnectSmtp,
 				Email:          v.Email,
-				SyntaxValid:    v.SyntaxValid,
-				IsDisposable:   v.IsDisposable,
-				IsRoleAccount:  v.IsRoleAccount,
 				IsCatchAll:     v.IsCatchAll,
 				IsDeliverable:  v.IsDeliverable,
-				CanConnectSmtp: v.CanConnectSmtp,
-				IsInboxFull:    v.IsInboxFull,
 				IsDisabled:     v.IsDisabled,
+				IsDisposable:   v.IsDisposable,
+				IsInboxFull:    v.IsInboxFull,
+				IsRoleAccount:  v.IsRoleAccount,
 				MxRecords: &api_prompt_email_verification.Result_MX{
 					AcceptsMail: v.MxRecords.AcceptsMail,
 					Records:     v.MxRecords.Records,
 				},
-				Message: v.Message,
+				SyntaxValid: v.SyntaxValid,
+				Message:     v.Message,
 			}},
 		}
-	default:
-		ciee, ok := present.(check_if_email_exist.DepPresenter)
-		if !ok {
-			return nil, errors.New("invalid ResultType")
-		}
-
+	case check_if_email_exist.DepPresenter:
 		var address *wrappers.StringValue
-		if ciee.Syntax.Address == nil {
+		if v.Syntax.Address == nil {
 			address = nil
 		} else {
-			address = &wrappers.StringValue{Value: *ciee.Syntax.Address}
+			address = &wrappers.StringValue{Value: *v.Syntax.Address}
 		}
-		response = v1.EmailResponse{Result: &v1.EmailResponse_CheckIfEmailExist{
-			CheckIfEmailExist: &api_ciee.Result{
-				Input:       ciee.Input,
-				IsReachable: ciee.IsReachable.String(),
-				Misc: &api_ciee.Misc{
-					IsDisposable:  ciee.Misc.IsDisposable,
-					IsRoleAccount: ciee.Misc.IsRoleAccount,
+		response = &v1.EmailResponse{Result: &v1.EmailResponse_CheckIfEmailExist{
+			CheckIfEmailExist: &apiciee.Result{
+				Input:       v.Input,
+				IsReachable: v.IsReachable.String(),
+				Misc: &apiciee.Misc{
+					IsDisposable:  v.Misc.IsDisposable,
+					IsRoleAccount: v.Misc.IsRoleAccount,
 				},
-				Mx: &api_ciee.MX{
-					AcceptsMail: ciee.MX.AcceptsMail,
-					Records:     ciee.MX.Records,
+				Mx: &apiciee.MX{
+					AcceptsMail: v.MX.AcceptsMail,
+					Records:     v.MX.Records,
 				},
-				Smtp: &api_ciee.SMTP{
-					CanConnectSmtp: ciee.SMTP.CanConnectSmtp,
-					HasFullInbox:   ciee.SMTP.HasFullInbox,
-					IsCatchAll:     ciee.SMTP.IsCatchAll,
-					IsDeliverable:  ciee.SMTP.IsDeliverable,
-					IsDisabled:     ciee.SMTP.IsDisabled,
+				Smtp: &apiciee.SMTP{
+					CanConnectSmtp: v.SMTP.CanConnectSmtp,
+					HasFullInbox:   v.SMTP.HasFullInbox,
+					IsCatchAll:     v.SMTP.IsCatchAll,
+					IsDeliverable:  v.SMTP.IsDeliverable,
+					IsDisabled:     v.SMTP.IsDisabled,
 				},
-				Syntax: &api_ciee.Syntax{
+				Syntax: &apiciee.Syntax{
 					Address:       address,
-					Username:      ciee.Syntax.Username,
-					Domain:        ciee.Syntax.Domain,
-					IsValidSyntax: ciee.Syntax.IsValidSyntax,
+					Username:      v.Syntax.Username,
+					Domain:        v.Syntax.Domain,
+					IsValidSyntax: v.Syntax.IsValidSyntax,
 				},
-				Error: ciee.Error,
+				Error: v.Error,
 			},
 		},
 		}
+	default:
+		return nil, errors.New("invalid ResultType")
 	}
 
-	return &response, err
+	return response, err
 }

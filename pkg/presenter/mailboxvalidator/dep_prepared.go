@@ -3,9 +3,14 @@ package mailboxvalidator
 import (
 	"fmt"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"time"
+)
+
+const (
+	MBVTrue  = "True"
+	MBVFalse = "False"
 )
 
 type DepPresenterForView struct {
@@ -31,11 +36,15 @@ type DepPresenterForView struct {
 	ErrorMessage          string `json:"error_message"`
 }
 
-func boolToString(value bool) string {
+func FromBool(value bool) string {
 	if value {
-		return "True"
+		return MBVTrue
 	}
-	return "False"
+	return MBVFalse
+}
+
+func ToBool(value string) bool {
+	return value == MBVTrue
 }
 
 func NewDepPreparerForViewDefault() DepPreparerForView {
@@ -50,31 +59,31 @@ type DepPreparerForView struct {
 	d DepPreparer
 }
 
-func (d DepPreparerForView) CanPrepare(email email.EmailAddress, result ev.ValidationResult, opts preparer.Options) bool {
+func (d DepPreparerForView) CanPrepare(email evmail.Address, result ev.ValidationResult, opts preparer.Options) bool {
 	return d.d.CanPrepare(email, result, opts)
 }
 
-func (d DepPreparerForView) Prepare(email email.EmailAddress, resultInterface ev.ValidationResult, opts preparer.Options) interface{} {
+func (d DepPreparerForView) Prepare(email evmail.Address, resultInterface ev.ValidationResult, opts preparer.Options) interface{} {
 	depPresenter := d.d.Prepare(email, resultInterface, opts).(DepPresenter)
 
 	return DepPresenterForView{
 		EmailAddress:          depPresenter.EmailAddress,
 		Domain:                depPresenter.Domain,
-		IsFree:                boolToString(depPresenter.IsFree),
-		IsSyntax:              boolToString(depPresenter.IsSyntax),
-		IsDomain:              boolToString(depPresenter.IsDomain),
-		IsSmtp:                boolToString(depPresenter.IsSmtp),
-		IsVerified:            boolToString(depPresenter.IsVerified),
-		IsServerDown:          boolToString(depPresenter.IsServerDown),
-		IsGreylisted:          boolToString(depPresenter.IsGreylisted),
-		IsDisposable:          boolToString(depPresenter.IsDisposable),
-		IsSuppressed:          boolToString(depPresenter.IsSuppressed),
-		IsRole:                boolToString(depPresenter.IsRole),
-		IsHighRisk:            boolToString(depPresenter.IsHighRisk),
-		IsCatchall:            boolToString(depPresenter.IsCatchall),
+		IsFree:                FromBool(depPresenter.IsFree),
+		IsSyntax:              FromBool(depPresenter.IsSyntax),
+		IsDomain:              FromBool(depPresenter.IsDomain),
+		IsSmtp:                FromBool(depPresenter.IsSmtp),
+		IsVerified:            FromBool(depPresenter.IsVerified),
+		IsServerDown:          FromBool(depPresenter.IsServerDown),
+		IsGreylisted:          FromBool(depPresenter.IsGreylisted),
+		IsDisposable:          FromBool(depPresenter.IsDisposable),
+		IsSuppressed:          FromBool(depPresenter.IsSuppressed),
+		IsRole:                FromBool(depPresenter.IsRole),
+		IsHighRisk:            FromBool(depPresenter.IsHighRisk),
+		IsCatchall:            FromBool(depPresenter.IsCatchall),
 		MailboxvalidatorScore: fmt.Sprint(depPresenter.MailboxvalidatorScore),
 		TimeTaken:             fmt.Sprint(depPresenter.TimeTaken.Round(time.Microsecond).Seconds()),
-		Status:                boolToString(depPresenter.Status),
+		Status:                FromBool(depPresenter.Status),
 		CreditsAvailable:      depPresenter.CreditsAvailable,
 		ErrorCode:             depPresenter.ErrorCode,
 		ErrorMessage:          depPresenter.ErrorMessage,

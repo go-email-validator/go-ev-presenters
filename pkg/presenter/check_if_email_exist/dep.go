@@ -2,7 +2,7 @@ package check_if_email_exist
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 )
@@ -52,11 +52,11 @@ type DepPreparer struct {
 	calculateAvailability FuncAvailability
 }
 
-func (_ DepPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, _ preparer.Options) bool {
+func (DepPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ preparer.Options) bool {
 	return result.ValidatorName() == ev.DepValidatorName
 }
 
-func (s DepPreparer) Prepare(email email.EmailAddress, result ev.ValidationResult, opts preparer.Options) interface{} {
+func (s DepPreparer) Prepare(email evmail.Address, result ev.ValidationResult, opts preparer.Options) interface{} {
 	depPresenter := DepPresenter{
 		Input: email.String(),
 		Misc:  miscPresenter{},

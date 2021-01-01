@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
@@ -13,9 +13,9 @@ import (
 )
 
 func NewMultiplePresentersDefault() MultiplePresenter {
-	return MultiplePresenter{map[preparer.Name]Presenter{
+	return NewMultiplePresenter(map[preparer.Name]Interface{
 		check_if_email_exist.Name: NewPresenter(
-			ev_email.EmailFromString,
+			evmail.FromString,
 			check_if_email_exist.NewDepValidator(),
 			check_if_email_exist.NewDepPreparerDefault(),
 		),
@@ -29,14 +29,22 @@ func NewMultiplePresentersDefault() MultiplePresenter {
 			prompt_email_verification_api.NewDepValidator(),
 			prompt_email_verification_api.NewDepPreparerDefault(),
 		),
-	}}
+	})
 }
 
-type MultiplePresenter struct {
-	presenters map[preparer.Name]Presenter
+type MultiplePresenter interface {
+	SingleValidation(email string, name preparer.Name) (interface{}, error)
 }
 
-func (p MultiplePresenter) SingleValidation(email string, name preparer.Name) (interface{}, error) {
+func NewMultiplePresenter(presenters map[preparer.Name]Interface) MultiplePresenter {
+	return multiplePresenter{presenters: presenters}
+}
+
+type multiplePresenter struct {
+	presenters map[preparer.Name]Interface
+}
+
+func (p multiplePresenter) SingleValidation(email string, name preparer.Name) (interface{}, error) {
 	prep, ok := p.presenters[name]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("preparer with name %s does not exist", name))
@@ -45,23 +53,28 @@ func (p MultiplePresenter) SingleValidation(email string, name preparer.Name) (i
 	return prep.SingleValidation(email)
 }
 
-type GetEmail func(email string) ev_email.EmailAddress
+type GetEmail func(email string) evmail.Address
 
-func NewPresenter(getEmail GetEmail, validator ev.Validator, preparer preparer.Interface) Presenter {
-	return Presenter{
+type Interface interface {
+	SingleValidation(email string) (interface{}, error)
+}
+
+func NewPresenter(getEmail GetEmail, validator ev.Validator, preparer preparer.Interface) Interface {
+	return presenter{
 		getEmail:  getEmail,
 		validator: validator,
 		preparer:  preparer,
 	}
 }
 
-type Presenter struct {
-	getEmail  func(email string) ev_email.EmailAddress
+type presenter struct {
+	getEmail  func(email string) evmail.Address
 	validator ev.Validator
 	preparer  preparer.Interface
 }
 
-func (p Presenter) SingleValidation(email string) (interface{}, error) {
+// TODO if error will be put, mockPresenter should return it
+func (p presenter) SingleValidation(email string) (interface{}, error) {
 	address := p.getEmail(email)
 
 	start := time.Now()

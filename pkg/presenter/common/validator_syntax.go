@@ -3,7 +3,7 @@ package common
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/utils"
 	"regexp"
 )
@@ -18,7 +18,7 @@ type syntaxValidator struct {
 	ev.AValidatorWithoutDeps
 }
 
-func (_ syntaxValidator) Validate(email ev_email.EmailAddress, _ ...ev.ValidationResult) ev.ValidationResult {
+func (syntaxValidator) Validate(email evmail.Address, _ ...ev.ValidationResult) ev.ValidationResult {
 	if emailRegex.MatchString(email.String()) {
 		return ev.NewValidValidatorResult(ev.SyntaxValidatorName)
 	}

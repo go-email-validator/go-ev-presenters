@@ -39,6 +39,8 @@ func checkErr(err error) {
 	}
 }
 
+var getPresenter = presenter.NewMultiplePresentersDefault
+
 func runServer(quit chan bool) (*sync.WaitGroup, *errgroup.Group) {
 	var grpcServer *grpc.Server
 	var httpServer *http.Server
@@ -60,7 +62,7 @@ func runServer(quit chan bool) (*sync.WaitGroup, *errgroup.Group) {
 	wg.Add(2)
 
 	instance := EVApiV1{
-		presenter: presenter.NewMultiplePresentersDefault(),
+		presenter: getPresenter(),
 		matching: map[v1.ResultType]preparer.Name{
 			v1.ResultType_CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
 			v1.ResultType_MAIL_BOX_VALIDATOR:            mailboxvalidator.Name,

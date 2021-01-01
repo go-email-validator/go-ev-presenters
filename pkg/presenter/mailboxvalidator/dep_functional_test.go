@@ -2,21 +2,24 @@ package mailboxvalidator
 
 import (
 	"github.com/emirpasic/gods/sets/hashset"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/test_utils"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"reflect"
 	"testing"
 )
 
 func TestMain(m *testing.M) {
-	test_utils.TestMain(m)
+	evtests.TestMain(m)
 }
 
 func TestDepPreparer_Functional_Prepare(t *testing.T) {
-	test_utils.FunctionalSkip(t)
+	evtests.FunctionalSkip(t)
 
 	validator := NewDepValidator()
 	d := NewDepPreparerDefault()
+
+	tests := detPresenters(t)
 
 	// Some data or functional cannot be matched, see more nearby DepPresenter of emails
 	skipEmail := hashset.New(
@@ -31,7 +34,6 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 		"pr@yandex-team.ru",
 	)
 
-	tests := getPresenters()
 	for _, tt := range tests {
 		if skipEmail.Contains(tt.EmailAddress) {
 			t.Logf("skipped %v", tt.EmailAddress)
@@ -48,4 +50,11 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 			}
 		})
 	}
+}
+
+func detPresenters(t *testing.T) []DepPresenter {
+	tests := make([]DepPresenter, 0)
+	common.TestDepPresenters(t, &tests, "")
+
+	return tests
 }

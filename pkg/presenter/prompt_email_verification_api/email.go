@@ -1,14 +1,14 @@
 package prompt_email_verification_api
 
 import (
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"strings"
 )
 
 var emptyString = ""
 
-func EmailFromString(email string) email.EmailAddress {
+func EmailFromString(email string) evmail.Address {
 	firstPos := strings.IndexByte(email, '@')
 	lastPos := strings.LastIndexByte(email, '@')
 

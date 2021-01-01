@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"strings"
 )
 
@@ -34,7 +34,7 @@ func EmailsForTests() []string {
 	}
 }
 
-func NewEmailAddress(username, domain string, at *string) ev_email.EmailAddress {
+func NewEmailAddress(username, domain string, at *string) evmail.Address {
 	return emailAddress{
 		username: strings.ToLower(username),
 		at:       at,
@@ -58,7 +58,7 @@ func (e emailAddress) Domain() string {
 
 func (e emailAddress) String() string {
 	if e.at == nil {
-		return e.Username() + ev_email.AT + e.Domain()
+		return e.Username() + evmail.AT + e.Domain()
 	}
 
 	return e.Username() + *e.at + e.Domain()

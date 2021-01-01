@@ -10,7 +10,9 @@ func TestCalculateScore(t *testing.T) {
 		"zxczxczxc@joycasinoru", //TODO syntax is valid
 	)
 
-	for _, tt := range getPresenters() {
+	tests := detPresenters(t)
+
+	for _, tt := range tests {
 		if skipEmail.Contains(tt.EmailAddress) {
 			t.Logf("skipped %v", tt.EmailAddress)
 			continue

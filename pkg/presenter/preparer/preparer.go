@@ -2,7 +2,7 @@ package preparer
 
 import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"time"
 )
 
@@ -23,14 +23,14 @@ type options struct {
 	ExecutedTimeValue time.Duration
 }
 
-func (_ options) IsOptions() {}
+func (options) IsOptions() {}
 func (o options) ExecutedTime() time.Duration {
 	return o.ExecutedTimeValue
 }
 
 type Interface interface {
-	CanPrepare(email email.EmailAddress, result ev.ValidationResult, opts Options) bool
-	Prepare(email email.EmailAddress, result ev.ValidationResult, opts Options) interface{}
+	CanPrepare(email evmail.Address, result ev.ValidationResult, opts Options) bool
+	Prepare(email evmail.Address, result ev.ValidationResult, opts Options) interface{}
 }
 
 type MapPreparers map[ev.ValidatorName]Interface
@@ -43,7 +43,7 @@ type MultiplePreparer struct {
 	preparers MapPreparers
 }
 
-func (p MultiplePreparer) preparer(email email.EmailAddress, result ev.ValidationResult, opts Options) Interface {
+func (p MultiplePreparer) preparer(email evmail.Address, result ev.ValidationResult, opts Options) Interface {
 	if preparer, ok := p.preparers[result.ValidatorName()]; ok && preparer.CanPrepare(email, result, opts) {
 		return preparer
 	}
@@ -51,10 +51,10 @@ func (p MultiplePreparer) preparer(email email.EmailAddress, result ev.Validatio
 	return nil
 }
 
-func (p MultiplePreparer) CanPrepare(email email.EmailAddress, result ev.ValidationResult, opts Options) bool {
+func (p MultiplePreparer) CanPrepare(email evmail.Address, result ev.ValidationResult, opts Options) bool {
 	return p.preparer(email, result, opts) != nil
 }
 
-func (p MultiplePreparer) Prepare(email email.EmailAddress, result ev.ValidationResult, opts Options) interface{} {
+func (p MultiplePreparer) Prepare(email evmail.Address, result ev.ValidationResult, opts Options) interface{} {
 	return p.preparer(email, result, opts).Prepare(email, result, opts)
 }

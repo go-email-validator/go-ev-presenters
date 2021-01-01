@@ -4,7 +4,7 @@ import (
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/contains"
-	email "github.com/go-email-validator/go-email-validator/pkg/ev/ev_email"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"time"
@@ -63,11 +63,11 @@ type DepPreparer struct {
 	calculateScore FuncCalculateScore
 }
 
-func (_ DepPreparer) CanPrepare(_ email.EmailAddress, result ev.ValidationResult, opts preparer.Options) bool {
+func (DepPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, opts preparer.Options) bool {
 	return opts.ExecutedTime() != 0 && result.ValidatorName() == ev.DepValidatorName
 }
 
-func (d DepPreparer) Prepare(email email.EmailAddress, resultInterface ev.ValidationResult, opts preparer.Options) (result interface{}) {
+func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.ValidationResult, opts preparer.Options) (result interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			result = DepPresenter{
