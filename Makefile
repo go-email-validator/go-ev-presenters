@@ -68,6 +68,8 @@ docker.build:
 
 docker.push: docker.build docker.push.version docker.push.latest
 
+docker.push.only: docker.push.version docker.push.latest
+
 docker.push.version:
 	docker image tag $(IMAGE):$(VERSION) $(DOCKER_USER)/$(IMAGE):$(VERSION)
 	docker push $(DOCKER_USER)/$(IMAGE):$(VERSION)

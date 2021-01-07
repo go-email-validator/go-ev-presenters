@@ -1,8 +1,7 @@
-package main
+package server
 
 import (
 	"context"
-	"errors"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	apiciee "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist"
@@ -16,7 +15,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api/cmd/dep_test_generator/struct"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -26,10 +25,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-)
-
-const (
-	defaultEmail = "go.email.validator@gmail.com"
 )
 
 var valuePresenters = map[preparer.Name]presenter.Interface{
@@ -57,10 +52,7 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		fixturePath := rootPath + "/check_if_email_exist/" + common.DefaultDepFixtureFile
 		fixtures := make([]check_if_email_exist.DepPresenter, 0)
 		common.TestDepPresenters(t, &fixtures, fixturePath)
-		if !assert.Greater(t, len(fixtures), 0) {
-			t.Fail()
-			return nil
-		}
+		require.Greater(t, len(fixtures), 0)
 
 		presenters := common.TestEmailResponses(t, &apiciee.Result{}, fixturePath, "")
 		presenterResult := make(map[string]interface{}, len(fixtures))
@@ -83,10 +75,7 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		fixturePath := rootPath + "/mailboxvalidator/" + addition.DepFixtureForViewFile
 		fixtures := make([]mailboxvalidator.DepPresenterForView, 0)
 		common.TestDepPresenters(t, &fixtures, fixturePath)
-		if !assert.Greater(t, len(fixtures), 0) {
-			t.Fail()
-			return nil
-		}
+		require.Greater(t, len(fixtures), 0)
 
 		presenters := common.TestEmailResponses(t, &apimbv.Result{}, fixturePath, "")
 		presenterResult := make(map[string]interface{}, len(fixtures))
@@ -110,10 +99,7 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		fixturePath := rootPath + "/prompt_email_verification_api/" + common.DefaultDepFixtureFile
 		fixtures := make([]_struct.DepPresenterTest, 0)
 		common.TestDepPresenters(t, &fixtures, fixturePath)
-		if !assert.Greater(t, len(fixtures), 0) {
-			t.Fail()
-			return nil
-		}
+		require.Greater(t, len(fixtures), 0)
 
 		presenters := common.TestEmailResponses(t, &api_prompt_email_verification.Result{}, fixturePath, "#.Dep")
 		presenterResult := make(map[string]interface{}, len(fixtures))
@@ -137,93 +123,81 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 	return tests
 }
 
-func getResult(t *testing.T, result *v1.EmailResponse) interface{} {
-	switch v := result.GetResult().(type) {
-	case *v1.EmailResponse_CheckIfEmailExist:
-		return v.CheckIfEmailExist
-	case *v1.EmailResponse_MailBoxValidator:
-		return v.MailBoxValidator
-	case *v1.EmailResponse_PromptEmailVerificationApi:
-		return v.PromptEmailVerificationApi
-	}
-
-	t.Errorf("Cannot get result from grpc response")
-	return nil
-}
-
 func reset() {
 	for key := range valuePresenters {
 		valuePresenters[key] = nil
 	}
 }
 
+var opts Options
+
 func TestMain(m *testing.M) {
 	getPresenter = func() presenter.MultiplePresenter {
 		return presenter.NewMultiplePresenter(valuePresenters)
 	}
+	opts = NewOptions()
 
-	quit := make(chan bool)
-	wg, _ := runServer(quit)
-	wg.Wait()
-	defer closeServer(quit)
+	server := NewServer(opts)
+	err := server.Start()
+	if err != nil {
+		panic(err)
+	}
+	defer server.Shutdown()
 	evtests.TestMain(m)
 }
 
-func TestServer_HTTP(t *testing.T) {
+func TestServer_GRPC(t *testing.T) {
 	defer reset()
 
-	for _, tt := range depPresenters(t) {
+	conn, err := grpc.Dial(opts.GRPC.Bind, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(2*time.Second))
+	if err != nil {
+		log.Printf("did not connect: %v", err)
+		require.True(t, false)
+	}
+	defer conn.Close()
+	c := v1.NewEmailValidationClient(conn)
+
+	tests := depPresenters(t)
+
+	for _, tt := range tests {
 		t.Run(tt.args.email+"_"+strconv.Itoa(int(tt.args.resultType)), func(t *testing.T) {
-			url := "http://" + httpAddress + "/v1/validation/single/" + tt.args.email + "?result_type=" + strconv.Itoa(int(tt.args.resultType))
-			resp, err := http.Get(url)
-			assert.Equal(t, tt.wantErr, err)
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			assert.Nil(t, err)
-			res := &v1.EmailResponse{}
-			err = protojson.Unmarshal(body, res)
-			if !assert.Nil(t, err) {
-				return
-			}
-			if !proto.Equal(proto.Message(tt.want), res) {
-				t.Errorf("Want\n%v\ngot\n%v", tt.want.GetResult(), res.GetResult())
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			got, err := c.SingleValidation(ctx, &v1.EmailRequest{
+				Email:      tt.args.email,
+				ResultType: tt.args.resultType,
+			})
+
+			require.Nil(t, err)
+			if !proto.Equal(proto.Message(tt.want), got) {
+				t.Errorf("Want\n%v\ngot\n%v", tt.want.GetResult(), got.GetResult())
 			}
 		})
 	}
 }
 
-func TestServer_GRPC(t *testing.T) {
-	return
-	evtests.FunctionalSkip(t)
+func TestServer_HTTP(t *testing.T) {
 	defer reset()
 
-	conn, err := grpc.Dial(grpcAddress, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(2*time.Second))
-	if err != nil {
-		log.Printf("did not connect: %v", err)
-		assert.True(t, false)
-	}
-	defer conn.Close()
-	c := v1.NewEmailValidationClient(conn)
+	tests := depPresenters(t)
+	for _, tt := range tests {
+		t.Run(tt.args.email+"_"+strconv.Itoa(int(tt.args.resultType)), func(t *testing.T) {
+			url := "http://" + opts.HTTP.Bind + "/v1/validation/single/" + tt.args.email + "?result_type=" + strconv.Itoa(int(tt.args.resultType))
 
-	// Contact the server and print out its response.
-	for _, tt := range depPresenters(t)[:1] {
-		t.Run(tt.args.email, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer func() {
-				t.Errorf("timeout")
-				cancel()
-			}()
-			got, err := c.SingleValidation(ctx, &v1.EmailRequest{
-				Email:      tt.args.email,
-				ResultType: tt.args.resultType,
-			})
-			if err != nil && !errors.Is(err, tt.wantErr) {
-				t.Errorf("SingleValidation() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			client := http.Client{
+				Timeout: 10 * time.Second,
 			}
-			result := getResult(t, got)
-			if result != tt.want {
-				t.Errorf("GetAddress() got = %v, want %v", result, tt.want)
+			resp, err := client.Get(url)
+			require.Equal(t, tt.wantErr, err)
+			defer resp.Body.Close()
+
+			body, err := ioutil.ReadAll(resp.Body)
+			require.Nil(t, err)
+			got := &v1.EmailResponse{}
+			err = protojson.Unmarshal(body, got)
+			require.Nil(t, err)
+			if !proto.Equal(proto.Message(tt.want), got) {
+				t.Errorf("Want\n%v\ngot\n%v", tt.want.GetResult(), got.GetResult())
 			}
 		})
 	}

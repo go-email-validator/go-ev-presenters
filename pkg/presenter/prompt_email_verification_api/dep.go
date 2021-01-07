@@ -82,9 +82,14 @@ func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.Validation
 	return depPresenter
 }
 
-func NewDepValidator() ev.Validator {
+func NewDepValidator(smtpValidator ev.Validator) ev.Validator {
+	builder := ev.NewDepBuilder(nil)
+	if smtpValidator == nil {
+		smtpValidator = builder.Get(ev.SMTPValidatorName)
+	}
+
 	return ev.NewDepBuilder(nil).Set(
 		ev.SyntaxValidatorName,
-		common.NewSyntaxValidator(),
-	).Build()
+		ev.NewSyntaxRegexValidator(nil),
+	).Set(ev.SMTPValidatorName, smtpValidator).Build()
 }

@@ -2,7 +2,7 @@ package common
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -20,20 +20,14 @@ func TestDepPresenters(t *testing.T, result interface{}, filepath string) {
 	}
 
 	jsonFile, err := os.Open(filepath)
-	if !assert.Nil(t, err) {
-		t.Fail()
-	}
+	require.Nil(t, err)
 	defer jsonFile.Close()
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
-	if !assert.Nil(t, err) {
-		t.Fail()
-	}
+	require.Nil(t, err)
 
 	err = json.Unmarshal(byteValue, &result)
-	if !assert.Nil(t, err) {
-		t.Fail()
-	}
+	require.Nil(t, err)
 }
 
 type unmarshalString []byte
@@ -53,35 +47,23 @@ func TestEmailResponses(t *testing.T, resultPtr proto.Message, filepath, path st
 	}
 
 	jsonFile, err := os.Open(filepath)
-	if !assert.Nil(t, err) {
-		t.Fail()
-		return nil
-	}
+	require.Nil(t, err)
 	defer jsonFile.Close()
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
-	if !assert.Nil(t, err) {
-		t.Fail()
-		return nil
-	}
+	require.Nil(t, err)
 
 	value := gjson.Get(string(byteValue), path)
 	jsonResponses := make([]unmarshalString, 0)
 	err = json.Unmarshal([]byte(value.String()), &jsonResponses)
-	if !assert.Nil(t, err) {
-		t.Fail()
-		return nil
-	}
+	require.Nil(t, err)
 
 	responses := make([]proto.Message, len(jsonResponses))
 	for index, jsonResponse := range jsonResponses {
 		var message proto.Message
 		message = reflect.New(reflect.ValueOf(resultPtr).Elem().Type()).Interface().(proto.Message)
 		err = protojson.Unmarshal(jsonResponse, message)
-		if !assert.Nil(t, err) {
-			t.Fail()
-			return nil
-		}
+		require.Nil(t, err)
 		responses[index] = message
 	}
 

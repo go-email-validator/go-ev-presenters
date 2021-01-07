@@ -5,6 +5,9 @@ docker run -p 50051:50051 -p 50052:50052 maranqz/go-email-validator
 ```
 
 Where 50051 is GRPC and 50052 is REST.
+To change ports use options:
+    --grpc-bind=0.0.0.0:8888
+    --http-bind=0.0.0.0:8889
 
 ```bash
 curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:50052/v1/validation/single

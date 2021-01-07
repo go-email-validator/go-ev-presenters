@@ -115,7 +115,12 @@ func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.Validation
 	return depPresenter
 }
 
-func NewDepValidator() ev.Validator {
+func NewDepValidator(smtpValidator ev.Validator) ev.Validator {
+	builder := ev.NewDepBuilder(nil)
+	if smtpValidator == nil {
+		smtpValidator = builder.Get(ev.SMTPValidatorName)
+	}
+
 	return ev.NewDepBuilder(nil).Set(
 		ev.BlackListEmailsValidatorName,
 		ev.NewBlackListEmailsValidator(contains.NewSet(hashset.New(
@@ -127,5 +132,5 @@ func NewDepValidator() ev.Validator {
 	).Set(
 		ev.FreeValidatorName,
 		ev.FreeDefaultValidator(),
-	).Build()
+	).Set(ev.SMTPValidatorName, smtpValidator).Build()
 }

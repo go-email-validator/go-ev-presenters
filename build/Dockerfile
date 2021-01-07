@@ -11,7 +11,7 @@ RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
 
 RUN go mod download
 RUN go mod verify
-RUN go build -o ../app pkg/api/v1/server/* && chmod 511 ../app
+RUN go build -o ../app cmd/server/main.go && chmod 511 ../app
 
 RUN ls -l /go/src/app
 WORKDIR /go/src/app
@@ -23,5 +23,3 @@ RUN ls -l /go/src/app
 
 
 CMD ["./app"]
-
-EXPOSE 50051 50052

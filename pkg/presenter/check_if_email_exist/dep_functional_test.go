@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 func TestDepPreparer_Prepare(t *testing.T) {
 	evtests.FunctionalSkip(t)
 
-	validator := NewDepValidator()
+	validator := NewDepValidator(nil)
 	d := NewDepPreparerDefault()
 
 	tests := make([]DepPresenter, 0)

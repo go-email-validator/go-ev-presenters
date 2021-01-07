@@ -1,4 +1,4 @@
-package main
+package server
 
 type mockPresenter struct {
 	ret map[string]interface{}

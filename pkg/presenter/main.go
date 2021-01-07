@@ -3,8 +3,13 @@ package presenter
 import (
 	"errors"
 	"fmt"
+	"github.com/dgraph-io/ristretto"
+	"github.com/eko/gocache/marshaler"
+	"github.com/eko/gocache/store"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evcache"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
@@ -13,20 +18,42 @@ import (
 )
 
 func NewMultiplePresentersDefault() MultiplePresenter {
+	ristrettoCache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1000,
+		MaxCost:     100,
+		BufferItems: 64,
+	})
+	if err != nil {
+		panic(err)
+	}
+	ristrettoStore := store.NewRistretto(ristrettoCache, &store.Options{})
+
+	cache := evcache.NewCacheMarshaller(
+		marshaler.New(ristrettoStore),
+		func() interface{} { return ev.NewValidResult(ev.SyntaxValidatorName) },
+		nil,
+	)
+
+	smtpValidator := ev.NewCacheDecorator(
+		ev.GetDefaultSMTPValidator(evsmtp.CheckerDTO{}),
+		cache,
+		nil,
+	)
+
 	return NewMultiplePresenter(map[preparer.Name]Interface{
 		check_if_email_exist.Name: NewPresenter(
 			evmail.FromString,
-			check_if_email_exist.NewDepValidator(),
+			check_if_email_exist.NewDepValidator(smtpValidator),
 			check_if_email_exist.NewDepPreparerDefault(),
 		),
 		mailboxvalidator.Name: NewPresenter(
 			mailboxvalidator.EmailFromString,
-			mailboxvalidator.NewDepValidator(),
+			mailboxvalidator.NewDepValidator(smtpValidator),
 			mailboxvalidator.NewDepPreparerForViewDefault(),
 		),
 		prompt_email_verification_api.Name: NewPresenter(
 			prompt_email_verification_api.EmailFromString,
-			prompt_email_verification_api.NewDepValidator(),
+			prompt_email_verification_api.NewDepValidator(smtpValidator),
 			prompt_email_verification_api.NewDepPreparerDefault(),
 		),
 	})

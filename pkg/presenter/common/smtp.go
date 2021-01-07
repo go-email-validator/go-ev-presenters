@@ -80,7 +80,7 @@ func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ prep
 			presenter.IsDeliverable = false
 		case evsmtp.RandomRCPTStage:
 			presenter.IsCatchAll = false
-		case evsmtp.RCPTStage:
+		case evsmtp.RCPTsStage:
 			presenter.IsDeliverable = false
 			switch {
 			case strings.Contains(errString, "disabled") ||

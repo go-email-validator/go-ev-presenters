@@ -8,7 +8,7 @@ import (
 )
 
 // TODO create transfer from DepPresenterForView to DepPresenter
-///go:generate go run cmd/dep_test_generator/gen.go
+//go:generate go run cmd/dep_test_generator/gen.go
 
 const Name preparer.Name = "CheckIfEmailExist"
 
@@ -85,9 +85,17 @@ func (s DepPreparer) Prepare(email evmail.Address, result ev.ValidationResult, o
 	return depPresenter
 }
 
-func NewDepValidator() ev.Validator {
-	return ev.NewDepBuilder(nil).Set(
+func NewDepValidator(smtpValidator ev.Validator) ev.Validator {
+	builder := ev.NewDepBuilder(nil)
+	if smtpValidator == nil {
+		smtpValidator = builder.Get(ev.SMTPValidatorName)
+	}
+
+	return builder.Set(
 		ev.SyntaxValidatorName,
-		common.NewSyntaxValidator(),
+		ev.NewSyntaxRegexValidator(nil),
+	).Set(
+		ev.SMTPValidatorName,
+		smtpValidator,
 	).Build()
 }
