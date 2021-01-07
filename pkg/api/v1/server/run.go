@@ -1,12 +1,20 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"io"
+	"io/ioutil"
+	"mime"
 	"net"
 	"net/http"
 	"strings"
@@ -45,7 +53,20 @@ func (s *Server) StartGRPC() error {
 		return fmt.Errorf("create listener: %w", err)
 	}
 
-	s.grpcServer = grpc.NewServer()
+	var opts []grpc.ServerOption
+	if s.opts.Auth.Key != "" {
+		opts = append(opts, grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(func(ctx context.Context) (context.Context, error) {
+			// From https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/auth/examples_test.go
+			token := metautils.ExtractIncoming(ctx).Get("authorization")
+			if token != s.opts.Auth.Key {
+				return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: \"%v\"", token)
+			}
+
+			return context.Background(), nil
+		})))
+	}
+
+	s.grpcServer = grpc.NewServer(opts...)
 	v1.RegisterEmailValidationServer(s.grpcServer, s.opts.GRPC.Server)
 
 	s.waitGroup.Add(1)
@@ -72,14 +93,23 @@ func (s *Server) StartHTTP() error {
 		return fmt.Errorf("create listener: %v", err)
 	}
 
-	mux := runtime.NewServeMux(s.opts.HTTP.MuxOptions...)
-	s.httpServer = &http.Server{Addr: s.opts.HTTP.Bind, Handler: mux}
+	mux := http.NewServeMux()
+
+	err = s.addSwagger(mux)
+	if err != nil {
+		return nil
+	}
+
+	gwmux := runtime.NewServeMux(s.opts.HTTP.MuxOptions...)
+	mux.Handle("/", gwmux)
 
 	ctx := context.Background()
-	err = v1.RegisterEmailValidationHandlerFromEndpoint(ctx, mux, s.opts.GRPC.Bind, s.opts.HTTP.GRPCOptions)
+	err = v1.RegisterEmailValidationHandlerFromEndpoint(ctx, gwmux, s.opts.GRPC.Bind, s.opts.HTTP.GRPCOptions)
 	if err != nil {
 		return err
 	}
+
+	s.httpServer = &http.Server{Addr: s.opts.HTTP.Bind, Handler: mux}
 
 	s.waitGroup.Add(1)
 	go func() {
@@ -92,6 +122,24 @@ func (s *Server) StartHTTP() error {
 		s.waitGroup.Done()
 		log.Logger().Debug("HTTP server stopped")
 	}()
+
+	return nil
+}
+
+func (s *Server) addSwagger(mux *http.ServeMux) error {
+	swagger, err := ioutil.ReadFile(s.opts.HTTP.SwaggerPath)
+	if err != nil {
+		return err
+	}
+	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {
+		io.Copy(w, bytes.NewReader(swagger))
+	})
+
+	mime.AddExtensionType(".svg", "image/svg+xml")
+	// Expose files in third_party/swagger-ui/ on <host>/swagger-ui
+	fileServer := http.FileServer(http.Dir("third_party/swagger-ui"))
+	prefix := "/swagger-ui/"
+	mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
 
 	return nil
 }

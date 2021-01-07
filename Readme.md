@@ -13,6 +13,9 @@ To change ports use options:
 curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:50052/v1/validation/single
 ```
 
+swagger-ui
+http://localhost:50052/swagger-ui/
+
 Where result_type is enum for choosing of viewing:
 * 0 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
 * 1 - [mailboxviewer](https://www.mailboxvalidator.com/api-single-validation)

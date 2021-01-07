@@ -8,6 +8,7 @@ const (
 	grpcBindFlag = "grpc-bind"
 	httpBindFlag = "http-bind"
 	verboseFlag  = "verbose"
+	apiKeyFlag   = "api-key"
 )
 
 var isVerbose bool
@@ -16,4 +17,6 @@ func init() {
 	rootCmd.Flags().StringVar(&opts.GRPC.Bind, grpcBindFlag, server.GRPCDefaultHost, "GRPC bind address")
 	rootCmd.Flags().StringVar(&opts.HTTP.Bind, httpBindFlag, server.HTTPDefaultHost, "HTTP bind address")
 	rootCmd.Flags().BoolVarP(&isVerbose, verboseFlag, "v", false, "Show DEBUG log information")
+
+	rootCmd.Flags().StringVarP(&opts.Auth.Key, apiKeyFlag, "a", "", "Api key to authorization")
 }

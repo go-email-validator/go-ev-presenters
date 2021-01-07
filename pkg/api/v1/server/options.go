@@ -16,6 +16,7 @@ import (
 const (
 	GRPCDefaultHost = "0.0.0.0:50051"
 	HTTPDefaultHost = "0.0.0.0:50052"
+	SwaggerPath     = "api/v1/swagger/ev.swagger.json"
 )
 
 func defaultInstance() v1.EmailValidationServer {
@@ -41,6 +42,7 @@ func NewOptions() Options {
 type Options struct {
 	GRPC GRPCOptions
 	HTTP HTTPOptions
+	Auth AuthOptions
 }
 
 var shutDownTimeout = 1 * time.Second
@@ -71,6 +73,7 @@ func NewHTTPOptions() HTTPOptions {
 		},
 		ShutdownTimeout: shutDownTimeout,
 		Enable:          true,
+		SwaggerPath:     SwaggerPath,
 	}
 }
 
@@ -80,4 +83,13 @@ type HTTPOptions struct {
 	MuxOptions      []runtime.ServeMuxOption
 	GRPCOptions     []grpc.DialOption
 	ShutdownTimeout time.Duration
+	SwaggerPath     string
+}
+
+func NewAuthOptions() AuthOptions {
+	return AuthOptions{}
+}
+
+type AuthOptions struct {
+	Key string
 }
