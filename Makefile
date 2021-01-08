@@ -78,7 +78,7 @@ docker.push.latest:
 	docker push $(DOCKER_USER)/$(IMAGE):latest
 
 
-HEROKU_APP_NAME=own-email-validator
+HEROKU_APP_NAME=evapi
 
 heroku.docker: heroku.docker.web heroku.docker.tor
 
