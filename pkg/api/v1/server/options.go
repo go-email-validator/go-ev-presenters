@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
@@ -19,9 +20,9 @@ const (
 	SwaggerPath     = "api/v1/swagger/ev.swagger.json"
 )
 
-func defaultInstance() v1.EmailValidationServer {
+func defaultInstance(dialFunc evsmtp.DialFunc) v1.EmailValidationServer {
 	return EVApiV1{
-		presenter: getPresenter(),
+		presenter: getPresenter(dialFunc),
 		matching: map[v1.ResultType]preparer.Name{
 			v1.ResultType_CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
 			v1.ResultType_MAIL_BOX_VALIDATOR:            mailboxvalidator.Name,
@@ -36,13 +37,15 @@ func NewOptions() Options {
 	return Options{
 		GRPC: NewGRPCOptions(),
 		HTTP: NewHTTPOptions(),
+		Auth: NewAuthOptions(),
 	}
 }
 
 type Options struct {
-	GRPC GRPCOptions
-	HTTP HTTPOptions
-	Auth AuthOptions
+	SMTPProxy string
+	GRPC      GRPCOptions
+	HTTP      HTTPOptions
+	Auth      AuthOptions
 }
 
 var shutDownTimeout = 1 * time.Second
@@ -50,14 +53,12 @@ var shutDownTimeout = 1 * time.Second
 func NewGRPCOptions() GRPCOptions {
 	return GRPCOptions{
 		Bind:            GRPCDefaultHost,
-		Server:          defaultInstance(),
 		ShutdownTimeout: shutDownTimeout,
 	}
 }
 
 type GRPCOptions struct {
 	Bind            string
-	Server          v1.EmailValidationServer
 	ShutdownTimeout time.Duration
 }
 

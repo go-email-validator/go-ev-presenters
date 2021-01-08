@@ -59,7 +59,7 @@ grpc.server:
 docker.build_run: docker.build docker.run
 
 docker.run:
-	docker run --rm --name my-running-app -p 50051:50051 -p 50052:50052 $(IMAGE):$(VERSION)
+	docker run --rm --name my-running-app -p 50051:50051 -p 50052:50052 $(IMAGE):$(VERSION) $(ARGS)
 
 docker.build:
 	cp -r ~/.ssh ./.ssh
@@ -76,6 +76,37 @@ docker.push.version:
 docker.push.latest:
 	docker image tag $(IMAGE):$(VERSION) $(DOCKER_USER)/$(IMAGE):latest
 	docker push $(DOCKER_USER)/$(IMAGE):latest
+
+
+HEROKU_APP_NAME=own-email-validator
+
+heroku.docker: heroku.docker.web heroku.docker.tor
+
+heroku.docker.web:
+	docker image tag $(IMAGE):$(VERSION) registry.heroku.com/$(HEROKU_APP_NAME)/web
+	docker push registry.heroku.com/$(HEROKU_APP_NAME)/web
+heroku.docker.tor:
+	docker image tag dperson/torproxy:latest registry.heroku.com/$(HEROKU_APP_NAME)/tor
+	docker push registry.heroku.com/$(HEROKU_APP_NAME)/tor
+
+heroku.push:
+	heroku container:push registry.heroku.com/$(HEROKU_APP_NAME)/web -a $(HEROKU_APP_NAME)
+
+heroku.release: heroku.release.web heroku.release.tor
+	heroku container:release web tor -a $(HEROKU_APP_NAME)
+heroku.release.web:
+	heroku container:release web -a $(HEROKU_APP_NAME)
+heroku.release.tor:
+	heroku container:release tor -a $(HEROKU_APP_NAME)
+
+heroku.bash:
+	heroku run -a $(HEROKU_APP_NAME) bash
+
+heroku.bash.web:
+	heroku run -a $(HEROKU_APP_NAME) bash
+
+heroku.bash.tor:
+	heroku run -a $(HEROKU_APP_NAME) bash
 
 go.build:
 	go build ./pkg/...

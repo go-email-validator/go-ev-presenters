@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func NewMultiplePresentersDefault() MultiplePresenter {
+func NewMultiplePresentersDefault(dialFunc evsmtp.DialFunc) MultiplePresenter {
 	ristrettoCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1000,
 		MaxCost:     100,
@@ -35,7 +35,9 @@ func NewMultiplePresentersDefault() MultiplePresenter {
 	)
 
 	smtpValidator := ev.NewCacheDecorator(
-		ev.GetDefaultSMTPValidator(evsmtp.CheckerDTO{}),
+		ev.GetDefaultSMTPValidator(evsmtp.CheckerDTO{
+			DialFunc: dialFunc,
+		}),
 		cache,
 		nil,
 	)

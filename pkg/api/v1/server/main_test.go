@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	apiciee "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/check_if_email_exist"
@@ -132,7 +133,7 @@ func reset() {
 var opts Options
 
 func TestMain(m *testing.M) {
-	getPresenter = func() presenter.MultiplePresenter {
+	getPresenter = func(dialFunc evsmtp.DialFunc) presenter.MultiplePresenter {
 		return presenter.NewMultiplePresenter(valuePresenters)
 	}
 	opts = NewOptions()

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp/smtp_client"
 	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -12,11 +14,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"h12.io/socks"
 	"io"
 	"io/ioutil"
 	"mime"
 	"net"
 	"net/http"
+	"net/smtp"
 	"strings"
 	"sync"
 )
@@ -67,11 +71,26 @@ func (s *Server) StartGRPC() error {
 	}
 
 	s.grpcServer = grpc.NewServer(opts...)
-	v1.RegisterEmailValidationServer(s.grpcServer, s.opts.GRPC.Server)
+
+	var dialFunc evsmtp.DialFunc
+	if s.opts.SMTPProxy != "" {
+		dialFunc = func(addr string) (smtp_client.SMTPClient, error) {
+			conn, err := socks.Dial(s.opts.SMTPProxy)("tcp", addr)
+			if err != nil {
+				log.Logger().Errorf("proxy create conn: %s", err)
+				return nil, err
+			}
+
+			host, _, _ := net.SplitHostPort(addr)
+			return smtp.NewClient(conn, host)
+		}
+	}
+
+	v1.RegisterEmailValidationServer(s.grpcServer, defaultInstance(dialFunc))
 
 	s.waitGroup.Add(1)
 	go func() {
-		log.Logger().Debug("gRPC server is starting")
+		log.Logger().Debugf("gRPC server is starting on %s", l.Addr())
 		if err := s.grpcServer.Serve(l); err != nil {
 			log.Logger().Errorf("gRPC server: %s", err)
 		}
@@ -97,7 +116,7 @@ func (s *Server) StartHTTP() error {
 
 	err = s.addSwagger(mux)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	gwmux := runtime.NewServeMux(s.opts.HTTP.MuxOptions...)
@@ -113,7 +132,7 @@ func (s *Server) StartHTTP() error {
 
 	s.waitGroup.Add(1)
 	go func() {
-		log.Logger().Debug("HTTP server is starting")
+		log.Logger().Debugf("HTTP server is starting on %s", l.Addr())
 		err = s.httpServer.Serve(l)
 
 		if err != nil && !strings.Contains(err.Error(), "http: Server closed") {
