@@ -6,6 +6,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 	"github.com/eko/gocache/marshaler"
 	"github.com/eko/gocache/store"
+	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evcache"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
@@ -35,11 +36,24 @@ func NewMultiplePresentersDefault(dialFunc evsmtp.DialFunc) MultiplePresenter {
 	)
 
 	smtpValidator := ev.NewCacheDecorator(
-		ev.GetDefaultSMTPValidator(evsmtp.CheckerDTO{
-			DialFunc: dialFunc,
-		}),
+		ev.NewWarningsDecorator(
+			ev.NewSMTPValidator(evsmtp.NewCheckerCacheRandomRCPT(
+				evsmtp.NewChecker(evsmtp.CheckerDTO{DialFunc: dialFunc}).(evsmtp.CheckerWithRandomRCPT),
+				cache,
+				evsmtp.DefaultRandomCacheKeyGetter,
+			)),
+			ev.NewIsWarning(hashset.New(evsmtp.RandomRCPTStage), func(warningMap ev.WarningSet) ev.IsWarning {
+				return func(err error) bool {
+					errSMTP, ok := err.(evsmtp.Error)
+					if !ok {
+						return false
+					}
+					return warningMap.Contains(errSMTP.Stage())
+				}
+			}),
+		),
 		cache,
-		nil,
+		ev.EmailCacheKeyGetter,
 	)
 
 	return NewMultiplePresenter(map[preparer.Name]Interface{

@@ -35,4 +35,4 @@ Some checker providers are banned by disposable email hosts
 
 ## TODO
 
-1. Skip only incorrect data in tests and check another. 
+1. Skip only incorrect data in tests and check another.

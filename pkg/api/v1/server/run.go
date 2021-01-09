@@ -8,9 +8,13 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp/smtp_client"
 	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,6 +25,7 @@ import (
 	"net"
 	"net/http"
 	"net/smtp"
+	"runtime/debug"
 	"strings"
 	"sync"
 )
@@ -57,7 +62,17 @@ func (s *Server) StartGRPC() error {
 		return fmt.Errorf("create listener: %w", err)
 	}
 
-	var opts []grpc.ServerOption
+	var opts = []grpc.ServerOption{
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_logrus.UnaryServerInterceptor(log.Logger().WithFields(logrus.Fields{})),
+			grpc_recovery.UnaryServerInterceptor(
+				grpc_recovery.WithRecoveryHandlerContext(func(ctx context.Context, p interface{}) error {
+					log.Logger().Errorf("[PANIC] %s\n\n%s", p, string(debug.Stack()))
+					return status.Errorf(codes.Internal, "%s", p)
+				}),
+			),
+		)),
+	}
 	if s.opts.Auth.Key != "" {
 		opts = append(opts, grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(func(ctx context.Context) (context.Context, error) {
 			// From https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/auth/examples_test.go
@@ -77,7 +92,10 @@ func (s *Server) StartGRPC() error {
 		dialFunc = func(addr string) (smtp_client.SMTPClient, error) {
 			conn, err := socks.Dial(s.opts.SMTPProxy)("tcp", addr)
 			if err != nil {
-				log.Logger().Errorf("proxy create conn: %s", err)
+				log.Logger().WithFields(logrus.Fields{
+					"proxy":   s.opts.SMTPProxy,
+					"address": addr,
+				}).Errorf("proxy create conn: %s", err)
 				return nil, err
 			}
 
