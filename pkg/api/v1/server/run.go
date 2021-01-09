@@ -62,19 +62,17 @@ func (s *Server) StartGRPC() error {
 		return fmt.Errorf("create listener: %w", err)
 	}
 
-	var opts = []grpc.ServerOption{
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			grpc_logrus.UnaryServerInterceptor(log.Logger().WithFields(logrus.Fields{})),
-			grpc_recovery.UnaryServerInterceptor(
-				grpc_recovery.WithRecoveryHandlerContext(func(ctx context.Context, p interface{}) error {
-					log.Logger().Errorf("[PANIC] %s\n\n%s", p, string(debug.Stack()))
-					return status.Errorf(codes.Internal, "%s", p)
-				}),
-			),
-		)),
+	var unaryInterceptors = []grpc.UnaryServerInterceptor{
+		grpc_logrus.UnaryServerInterceptor(log.Logger().WithFields(logrus.Fields{})),
+		grpc_recovery.UnaryServerInterceptor(
+			grpc_recovery.WithRecoveryHandlerContext(func(ctx context.Context, p interface{}) error {
+				log.Logger().Errorf("[PANIC] %s\n\n%s", p, string(debug.Stack()))
+				return status.Errorf(codes.Internal, "%s", p)
+			}),
+		),
 	}
 	if s.opts.Auth.Key != "" {
-		opts = append(opts, grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(func(ctx context.Context) (context.Context, error) {
+		unaryInterceptors = append(unaryInterceptors, grpc_auth.UnaryServerInterceptor(func(ctx context.Context) (context.Context, error) {
 			// From https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/auth/examples_test.go
 			token := metautils.ExtractIncoming(ctx).Get("authorization")
 			if token != s.opts.Auth.Key {
@@ -82,7 +80,11 @@ func (s *Server) StartGRPC() error {
 			}
 
 			return context.Background(), nil
-		})))
+		}))
+	}
+
+	var opts = []grpc.ServerOption{
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(unaryInterceptors...)),
 	}
 
 	s.grpcServer = grpc.NewServer(opts...)

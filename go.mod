@@ -6,7 +6,7 @@ require (
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/eko/gocache v1.1.0
 	github.com/emirpasic/gods v1.12.0
-	github.com/go-email-validator/go-email-validator v0.0.0-20210107145723-05c33a744c0a
+	github.com/go-email-validator/go-email-validator v0.0.0-20210109143255-e88dd7c7adfa
 	github.com/golang/protobuf v1.4.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
@@ -14,7 +14,9 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
 	github.com/tidwall/gjson v1.6.7
-	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d
+	golang.org/x/sys v0.0.0-20210108172913-0df2131ae363 // indirect
+	golang.org/x/text v0.3.5 // indirect
+	google.golang.org/genproto v0.0.0-20210108203827-ffc7fda8c3d7
 	google.golang.org/grpc v1.34.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.0.1
 	google.golang.org/grpc/examples v0.0.0-20210109011638-fb40d83340e8 // indirect
