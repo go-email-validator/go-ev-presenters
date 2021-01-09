@@ -17,7 +17,7 @@ import (
 
 type EVApiV1 struct {
 	presenter presenter.MultiplePresenter
-	matching  map[v1.ResultType]preparer.Name
+	matching  map[v1.EmailRequest_ResultType]preparer.Name
 	v1.UnsafeEmailValidationServer
 }
 

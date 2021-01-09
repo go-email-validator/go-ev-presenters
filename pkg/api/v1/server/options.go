@@ -23,10 +23,10 @@ const (
 func defaultInstance(dialFunc evsmtp.DialFunc) v1.EmailValidationServer {
 	return EVApiV1{
 		presenter: getPresenter(dialFunc),
-		matching: map[v1.ResultType]preparer.Name{
-			v1.ResultType_CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
-			v1.ResultType_MAIL_BOX_VALIDATOR:            mailboxvalidator.Name,
-			v1.ResultType_PROMPT_EMAIL_VERIFICATION_API: prompt_email_verification_api.Name,
+		matching: map[v1.EmailRequest_ResultType]preparer.Name{
+			v1.EmailRequest_CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
+			v1.EmailRequest_MAIL_BOX_VALIDATOR:            mailboxvalidator.Name,
+			v1.EmailRequest_PROMPT_EMAIL_VERIFICATION_API: prompt_email_verification_api.Name,
 		},
 	}
 }

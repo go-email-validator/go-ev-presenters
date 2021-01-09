@@ -36,7 +36,7 @@ var valuePresenters = map[preparer.Name]presenter.Interface{
 
 type singleValidationTestArgs struct {
 	email      string
-	resultType v1.ResultType
+	resultType v1.EmailRequest_ResultType
 }
 
 type singleValidationTest struct {
@@ -62,7 +62,7 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 			tests = append(tests, singleValidationTest{
 				args: singleValidationTestArgs{
 					email:      dep.Input,
-					resultType: v1.ResultType_CIEE,
+					resultType: v1.EmailRequest_CIEE,
 				},
 				want: &v1.EmailResponse{Result: &v1.EmailResponse_CheckIfEmailExist{
 					CheckIfEmailExist: presenters[index].(*apiciee.Result),
@@ -85,7 +85,7 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 			tests = append(tests, singleValidationTest{
 				args: singleValidationTestArgs{
 					email:      dep.EmailAddress,
-					resultType: v1.ResultType_MAIL_BOX_VALIDATOR,
+					resultType: v1.EmailRequest_MAIL_BOX_VALIDATOR,
 				},
 				want: &v1.EmailResponse{Result: &v1.EmailResponse_MailBoxValidator{
 					MailBoxValidator: presenters[index].(*apimbv.Result),
@@ -109,7 +109,7 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 			tests = append(tests, singleValidationTest{
 				args: singleValidationTestArgs{
 					email:      dep.Email,
-					resultType: v1.ResultType_PROMPT_EMAIL_VERIFICATION_API,
+					resultType: v1.EmailRequest_PROMPT_EMAIL_VERIFICATION_API,
 				},
 				want: &v1.EmailResponse{Result: &v1.EmailResponse_PromptEmailVerificationApi{
 					PromptEmailVerificationApi: presenters[index].(*api_prompt_email_verification.Result),
@@ -137,6 +137,9 @@ func TestMain(m *testing.M) {
 		return presenter.NewMultiplePresenter(valuePresenters)
 	}
 	opts = NewOptions()
+
+	// Need to correct run of tests
+	opts.HTTP.SwaggerPath = "../../../../" + opts.HTTP.SwaggerPath
 
 	server := NewServer(opts)
 	err := server.Start()
