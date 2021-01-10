@@ -1,0 +1,258 @@
+openapi: 3.0.1
+info:
+  title: Email Validator
+  version: 0.0.1
+servers:
+- url: /
+security:
+- BearerAuth: []
+paths:
+  /v1/validation/single:
+    post:
+      tags:
+      - EmailValidation
+      operationId: EmailValidation_singleValidation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+        required: true
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+      x-codegen-request-body-name: body
+  /v1/validation/single/{email}:
+    get:
+      tags:
+      - EmailValidation
+      operationId: EmailValidation_singleValidation2
+      parameters:
+      - name: email
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: result_type
+        in: query
+        description: ResultTypeDescription
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: CHECK_IF_EMAIL_EXIST
+          enum:
+          - CHECK_IF_EMAIL_EXIST
+          - CIEE
+          - MAILBOXVALIDATOR
+          - MAIL_BOX_VALIDATOR
+          - MBV
+          - PROMPT_EMAIL_VERIFICATION_API
+          - PEVA
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+components:
+  schemas:
+    ResultType:
+      title: ResultType
+      type: string
+      description: |
+        * CHECK_IF_EMAIL_EXIST, CIEE - [check-if-email-exists format](https://github.com/amaurymartiny/check-if-email-exists#%EF%B8%8F-json-output).
+        * MAILBOXVALIDATOR, MAIL_BOX_VALIDATOR, MBV - [mailboxvalidator.com format](https://www.mailboxvalidator.com/api-single-validation).
+        * PROMPT_EMAIL_VERIFICATION_API, PEVA - [Email Verification api format](https://promptapi.com/marketplace/description/email_verification-api) from [promptapi](https://promptapi.com).
+      default: CHECK_IF_EMAIL_EXIST
+      enum:
+      - CHECK_IF_EMAIL_EXIST
+      - CIEE
+      - MAILBOXVALIDATOR
+      - MAIL_BOX_VALIDATOR
+      - MBV
+      - PROMPT_EMAIL_VERIFICATION_API
+      - PEVA
+    check_if_email_exist_misc:
+      type: object
+      properties:
+        is_disposable:
+          type: boolean
+        is_role_account:
+          type: boolean
+    check_if_email_exist_smtp:
+      type: object
+      properties:
+        can_connect_smtp:
+          type: boolean
+        has_full_inbox:
+          type: boolean
+        is_catch_all:
+          type: boolean
+        is_deliverable:
+          type: boolean
+        is_disabled:
+          type: boolean
+    check_if_email_exist_syntax:
+      type: object
+      properties:
+        address:
+          type: string
+        domain:
+          type: string
+        is_valid_syntax:
+          type: boolean
+        username:
+          type: string
+    check_if_email_exist_mx:
+      type: object
+      properties:
+        accepts_mail:
+          type: boolean
+        records:
+          type: array
+          items:
+            type: string
+    check_if_email_exist_result:
+      type: object
+      properties:
+        input:
+          type: string
+        is_reachable:
+          type: string
+        misc:
+          $ref: '#/components/schemas/check_if_email_exist_misc'
+        mx:
+          $ref: '#/components/schemas/check_if_email_exist_mx'
+        smtp:
+          $ref: '#/components/schemas/check_if_email_exist_smtp'
+        syntax:
+          $ref: '#/components/schemas/check_if_email_exist_syntax'
+        error:
+          type: string
+    mailboxvalidator_result:
+      type: object
+      properties:
+        email_address:
+          type: string
+        domain:
+          type: string
+        is_free:
+          type: string
+        is_syntax:
+          type: string
+        is_domain:
+          type: string
+        is_smtp:
+          type: string
+        is_verified:
+          type: string
+        is_server_down:
+          type: string
+        is_greylisted:
+          type: string
+        is_disposable:
+          type: string
+        is_suppressed:
+          type: string
+        is_role:
+          type: string
+        is_high_risk:
+          type: string
+        is_catchall:
+          type: string
+        mailboxvalidator_score:
+          type: string
+        time_taken:
+          type: string
+        status:
+          type: string
+        credits_available:
+          type: integer
+          format: int64
+        error_code:
+          type: string
+        error_message:
+          type: string
+    prompt_email_verification_api_result:
+      type: object
+      properties:
+        can_connect_smtp:
+          type: boolean
+        email:
+          type: string
+        is_catch_all:
+          type: boolean
+        is_deliverable:
+          type: boolean
+        is_disabled:
+          type: boolean
+        is_disposable:
+          type: boolean
+        is_inbox_full:
+          type: boolean
+        is_role_account:
+          type: boolean
+        mx_records:
+          $ref: '#/components/schemas/prompt_email_verification_api_mx'
+        syntax_valid:
+          type: boolean
+        message:
+          type: string
+    prompt_email_verification_api_mx:
+      type: object
+      properties:
+        accepts_mail:
+          type: boolean
+        records:
+          type: array
+          items:
+            type: string
+    UnexpectedError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    EmailRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        resultType:
+          $ref: '#/components/schemas/ResultType'
+    EmailResponse:
+      oneOf:
+      - $ref: '#/components/schemas/check_if_email_exist_result'
+      - $ref: '#/components/schemas/mailboxvalidator_result'
+      - $ref: '#/components/schemas/prompt_email_verification_api_result'
+  securitySchemes:
+    BearerAuth:
+      type: apiKey
+      name: Authorization
+      in: header

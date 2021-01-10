@@ -90,7 +90,7 @@ type multiplePresenter struct {
 func (p multiplePresenter) SingleValidation(email string, name preparer.Name) (interface{}, error) {
 	prep, ok := p.presenters[name]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("preparer with name %s does not exist", name))
+		return nil, errors.New(fmt.Sprintf("preparer with name \"%s\" does not exist", name))
 	}
 
 	return prep.SingleValidation(email)

@@ -2,6 +2,10 @@ API_PKG_PATH = pkg/api/v1/
 VERSION=0.0.1
 IMAGE=go-email-validator
 COVERAGE_FILE="coverage.out"
+pwd=`pwd`
+
+USER_ID=`id -u`
+USER_GROUP=`id -g`
 
 protoc.go:
 	protoc \
@@ -128,3 +132,17 @@ go.cover.full: go.test go.cover
 
 go.cover.total:
 	$(GO_COVER) | grep total | awk '{print substr($$3, 1, length($$3)-1)}'
+
+DOCKER_USER="$(USER_ID):$(USER_GROUP)"
+
+swagger.gen:
+	docker run --user "$(DOCKER_USER)" --rm  -v "$(pwd):/local" swaggerapi/swagger-codegen-cli-v3 generate \
+	-l go-server \
+	-o /local/pkg/api/openapi \
+	-i /local/api/v1/openapiv3/ev.openapiv3.yaml
+
+openapitools.gen:
+	docker run --user "$(DOCKER_USER)" --rm -v "$(pwd):/local" openapitools/openapi-generator-cli generate \
+	-g go-server \
+	-o /local/pkg/api/openapi \
+	-i /local/api/v1/openapiv3/ev.openapiv3.yaml
