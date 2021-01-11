@@ -8,6 +8,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/addition"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
 	"github.com/joho/godotenv"
 	"io/ioutil"
 	"log"
@@ -72,7 +73,7 @@ func main() {
 		depsForView[i] = depForView
 	}
 
-	f, err := os.Create(common.DefaultDepFixtureFile)
+	f, err := os.Create(presenter_test.DefaultDepFixtureFile)
 	die(err)
 	defer f.Close()
 

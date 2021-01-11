@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -62,7 +63,7 @@ func main() {
 		deps[i] = dep
 	}
 
-	f, err := os.Create(common.DefaultDepFixtureFile)
+	f, err := os.Create(presenter_test.DefaultDepFixtureFile)
 	die(err)
 	defer f.Close()
 

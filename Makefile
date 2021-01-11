@@ -135,14 +135,15 @@ go.cover.total:
 
 DOCKER_USER="$(USER_ID):$(USER_GROUP)"
 
-swagger.gen:
-	docker run --user "$(DOCKER_USER)" --rm  -v "$(pwd):/local" swaggerapi/swagger-codegen-cli-v3 generate \
-	-l go-server \
-	-o /local/pkg/api/openapi \
-	-i /local/api/v1/openapiv3/ev.openapiv3.yaml
-
 openapitools.gen:
 	docker run --user "$(DOCKER_USER)" --rm -v "$(pwd):/local" openapitools/openapi-generator-cli generate \
 	-g go-server \
-	-o /local/pkg/api/openapi \
+	-o /local/pkg/api/v1 \
 	-i /local/api/v1/openapiv3/ev.openapiv3.yaml
+	cd pkg/api/v1/ && \
+	rm -r api \
+	go/routers.go \
+	go/api_email_validation_service.go \
+ 	go.mod \
+	Dockerfile \
+	README.md

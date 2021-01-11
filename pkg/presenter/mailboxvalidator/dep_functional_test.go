@@ -3,8 +3,8 @@ package mailboxvalidator
 import (
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
 	"reflect"
 	"testing"
 )
@@ -54,7 +54,7 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 
 func detPresenters(t *testing.T) []DepPresenter {
 	tests := make([]DepPresenter, 0)
-	common.TestDepPresenters(t, &tests, "")
+	presenter_test.TestDepPresenters(t, &tests, "")
 
 	return tests
 }

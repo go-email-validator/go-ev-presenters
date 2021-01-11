@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api/cmd/dep_test_generator/struct"
 	"io/ioutil"
 	"log"
@@ -55,7 +56,7 @@ func main() {
 		deps[i] = depTest
 	}
 
-	f, err := os.Create(common.DefaultDepFixtureFile)
+	f, err := os.Create(presenter_test.DefaultDepFixtureFile)
 	die(err)
 	defer f.Close()
 

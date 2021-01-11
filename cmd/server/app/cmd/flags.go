@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1/server"
 	"os"
 )
 
 const (
 	envPrefix     = "EV_"
-	grpcBindFlag  = "grpc-bind"
-	grpcBindEnv   = envPrefix + "GRPC_BIND"
 	httpBindFlag  = "http-bind"
 	httpBindEnv   = envPrefix + "HTTP_BIND"
 	verboseFlag   = "verbose"
@@ -27,10 +24,6 @@ func init() {
 		opts.HTTP.Bind = "0.0.0.0:" + gatewayPort
 	}
 
-	if bind := os.Getenv(grpcBindEnv); bind != "" {
-		opts.GRPC.Bind = bind
-	}
-
 	if bind := os.Getenv(httpBindEnv); bind != "" {
 		opts.HTTP.Bind = bind
 	}
@@ -45,7 +38,6 @@ func init() {
 		opts.SMTPProxy = smtpProxy
 	}
 
-	rootCmd.Flags().StringVar(&opts.GRPC.Bind, grpcBindFlag, server.GRPCDefaultHost, "GRPC bind address")
 	rootCmd.Flags().StringVar(&opts.HTTP.Bind, httpBindFlag, opts.HTTP.Bind, "HTTP bind address")
 	rootCmd.Flags().BoolVarP(&isVerbose, verboseFlag, "v", isVerbose, "Show DEBUG log information")
 

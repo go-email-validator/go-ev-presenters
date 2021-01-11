@@ -191,7 +191,7 @@ paths:
     post:
       tags:
         - EmailValidation
-      operationId: EmailValidation_singleValidation
+      operationId: EmailValidation_singleValidation_post
       requestBody:
         content:
           application/json:
@@ -216,7 +216,7 @@ paths:
     get:
       tags:
         - EmailValidation
-      operationId: EmailValidation_singleValidation2
+      operationId: EmailValidation_singleValidation_get
       parameters:
         - name: email
           in: path

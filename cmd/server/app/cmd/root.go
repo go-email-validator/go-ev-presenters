@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1/server"
+	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -11,11 +11,11 @@ import (
 	"syscall"
 )
 
-var opts = server.NewOptions()
+var opts = v1.NewOptions()
 
 var rootCmd = &cobra.Command{
 	Use:  "ev",
-	Long: `GRPC and HTTP server start`,
+	Long: "start HTTP server",
 	Run: func(cmd *cobra.Command, args []string) {
 		if isVerbose {
 			logger := logrus.New()
@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 			log.SetLogger(logger)
 		}
 
-		serv := server.NewServer(opts)
+		serv := v1.NewServer(opts)
 
 		die := make(chan os.Signal, 1)
 		signal.Notify(die, os.Interrupt, os.Kill, syscall.SIGTERM)

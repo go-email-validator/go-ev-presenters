@@ -3,8 +3,8 @@ package prompt_email_verification_api
 import (
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/common"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
 	"reflect"
 	"sort"
 	"testing"
@@ -20,7 +20,7 @@ func TestDepPreparer_Prepare(t *testing.T) {
 	validator := NewDepValidator(nil)
 	d := NewDepPreparerDefault()
 	tests := make([]DepPresenterTest, 0)
-	common.TestDepPresenters(t, &tests, "")
+	presenter_test.TestDepPresenters(t, &tests, "")
 
 	// Some data or functional cannot be matched, see more nearby DepPresenter of emails
 	skipEmail := hashset.New(
