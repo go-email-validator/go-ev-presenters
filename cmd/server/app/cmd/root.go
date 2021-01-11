@@ -4,8 +4,8 @@ import (
 	"fmt"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,11 +16,20 @@ var opts = v1.NewOptions()
 var rootCmd = &cobra.Command{
 	Use:  "ev",
 	Long: "start HTTP server",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if isVerbose {
+			fiberStartupMessage = true
+		}
+
+		opts.Fiber.DisableStartupMessage = !fiberStartupMessage
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if isVerbose {
-			logger := logrus.New()
-			logger.SetLevel(logrus.DebugLevel)
-			log.SetLogger(logger)
+			l, err := zap.NewDevelopment()
+			if err != nil {
+				panic(err)
+			}
+			log.SetLogger(l)
 		}
 
 		serv := v1.NewServer(opts)

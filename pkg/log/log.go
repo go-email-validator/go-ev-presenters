@@ -1,19 +1,26 @@
 package log
 
-import "github.com/sirupsen/logrus"
+import (
+	"go.uber.org/zap"
+)
 
-// Default logger logs to console by default, but user can replace the logger using the SetLibraryLogger()
-var logger logrus.FieldLogger
+// Default logger logs to console by default
+var logger *zap.Logger
 
 func init() {
-	logrus.StandardLogger().SetLevel(logrus.ErrorLevel)
-	SetLogger(logrus.StandardLogger())
+	builder := zap.NewProductionConfig()
+	builder.Level = zap.NewAtomicLevelAt(zap.ErrorLevel)
+	l, err := builder.Build()
+	if err != nil {
+		panic(err)
+	}
+	SetLogger(l)
 }
 
-func SetLogger(l logrus.FieldLogger) {
+func SetLogger(l *zap.Logger) {
 	logger = l
 }
 
-func Logger() logrus.FieldLogger {
+func Logger() *zap.Logger {
 	return logger
 }

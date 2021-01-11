@@ -9,7 +9,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
-	"time"
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -42,8 +42,9 @@ var getPresenter = presenter.NewMultiplePresentersDefault
 
 func NewOptions() Options {
 	return Options{
-		HTTP: NewHTTPOptions(),
-		Auth: NewAuthOptions(),
+		HTTP:  NewHTTPOptions(),
+		Auth:  NewAuthOptions(),
+		Fiber: fiber.Config{DisableStartupMessage: true},
 	}
 }
 
@@ -51,22 +52,19 @@ type Options struct {
 	SMTPProxy string
 	HTTP      HTTPOptions
 	Auth      AuthOptions
+	Fiber     fiber.Config
 }
-
-var shutDownTimeout = 1 * time.Second
 
 func NewHTTPOptions() HTTPOptions {
 	return HTTPOptions{
-		Bind:            HTTPDefaultHost,
-		ShutdownTimeout: shutDownTimeout,
-		OpenApiPath:     SwaggerPath,
+		Bind:        HTTPDefaultHost,
+		OpenApiPath: SwaggerPath,
 	}
 }
 
 type HTTPOptions struct {
-	Bind            string
-	ShutdownTimeout time.Duration
-	OpenApiPath     string
+	Bind        string
+	OpenApiPath string
 }
 
 func NewAuthOptions() AuthOptions {

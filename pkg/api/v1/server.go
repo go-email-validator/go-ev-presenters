@@ -2,7 +2,6 @@ package v1
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp/smtp_client"
@@ -10,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"h12.io/socks"
 	"io/ioutil"
 	"net"
@@ -27,9 +26,9 @@ func NewServer(opts Options) Server {
 }
 
 type Server struct {
-	httpServer *http.Server
-	opts       Options
-	waitGroup  sync.WaitGroup
+	app       *fiber.App
+	opts      Options
+	waitGroup sync.WaitGroup
 }
 
 func (s *Server) Start() error {
@@ -41,9 +40,9 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) StartHTTP() error {
-	app := fiber.New()
+	s.app = fiber.New(s.opts.Fiber)
 	// Show error openapi format
-	app.Use(func(c *fiber.Ctx) error {
+	s.app.Use(func(c *fiber.Ctx) error {
 		chainErr := c.Next()
 
 		if chainErr != nil {
@@ -53,27 +52,33 @@ func (s *Server) StartHTTP() error {
 		return chainErr
 	})
 	// logger
-	app.Use(func(c *fiber.Ctx) error {
+	s.app.Use(func(c *fiber.Ctx) error {
+		defer func() {
+			if err := log.Logger().Sync(); err != nil {
+				fmt.Print(err)
+			}
+		}()
+
 		chainErr := c.Next()
 
 		// TODO Add formatting and fields
 		if chainErr != nil {
-			log.Logger().Error(chainErr)
+			log.Logger().Error(chainErr.Error())
 		}
 
 		return chainErr
 	})
-	app.Use(fiberrecover.New())
+	s.app.Use(fiberrecover.New())
 
 	var dialFunc evsmtp.DialFunc
 	if s.opts.SMTPProxy != "" {
 		dialFunc = func(addr string) (smtp_client.SMTPClient, error) {
 			conn, err := socks.Dial(s.opts.SMTPProxy)("tcp", addr)
 			if err != nil {
-				log.Logger().WithFields(logrus.Fields{
-					"proxy":   s.opts.SMTPProxy,
-					"address": addr,
-				}).Errorf("proxy create conn: %s", err)
+				log.Logger().Error(fmt.Sprintf("proxy create conn: %s", err),
+					zap.String("proxy", s.opts.SMTPProxy),
+					zap.String("address", addr),
+				)
 				return nil, err
 			}
 
@@ -83,21 +88,21 @@ func (s *Server) StartHTTP() error {
 	}
 
 	server := defaultInstance(s.opts, dialFunc)
-	app.Post("/v1/validation/single", server.EmailValidationSingleValidationPost)
-	app.Get("/v1/validation/single/:email", server.EmailValidationSingleValidationGet)
+	s.app.Post("/v1/validation/single", server.EmailValidationSingleValidationPost)
+	s.app.Get("/v1/validation/single/:email", server.EmailValidationSingleValidationGet)
 
-	err := s.addSwagger(app)
+	err := s.addSwagger()
 	if err != nil {
 		return err
 	}
 
 	s.waitGroup.Add(1)
 	go func() {
-		log.Logger().Debugf("HTTP server is starting on %s", s.opts.HTTP.Bind)
-		err = app.Listen(s.opts.HTTP.Bind)
+		log.Logger().Debug(fmt.Sprintf("HTTP server is starting on %s", s.opts.HTTP.Bind))
+		err = s.app.Listen(s.opts.HTTP.Bind)
 
 		if err != nil && !strings.Contains(err.Error(), "http: Server closed") {
-			log.Logger().Errorf("http server: %s", err)
+			log.Logger().Error(fmt.Sprintf("http server: %s", err))
 		}
 		s.waitGroup.Done()
 		log.Logger().Debug("HTTP server stopped")
@@ -105,16 +110,16 @@ func (s *Server) StartHTTP() error {
 	return nil
 }
 
-func (s *Server) addSwagger(app *fiber.App) error {
+func (s *Server) addSwagger() error {
 	openapi, err := ioutil.ReadFile(s.opts.HTTP.OpenApiPath)
 	if err != nil {
 		return err
 	}
-	app.Get("/swagger.json", func(c *fiber.Ctx) error {
+	s.app.Get("/swagger.json", func(c *fiber.Ctx) error {
 		return c.SendStream(bytes.NewReader(openapi))
 	})
 
-	app.Use("/swagger-ui/", filesystem.New(filesystem.Config{
+	s.app.Use("/swagger-ui/", filesystem.New(filesystem.Config{
 		Root: http.Dir("third_party/swagger-ui"),
 	}))
 
@@ -130,8 +135,6 @@ func (s *Server) Shutdown() {
 }
 
 func (s *Server) ShutdownHTTP() {
-	ctx, cancel := context.WithTimeout(context.Background(), s.opts.HTTP.ShutdownTimeout)
-	defer cancel()
-	err := s.httpServer.Shutdown(ctx)
-	log.Logger().Errorf("shutdown http: %v", err)
+	err := s.app.Shutdown()
+	log.Logger().Error(fmt.Sprintf("shutdown http: %v", err))
 }
