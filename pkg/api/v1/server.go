@@ -71,12 +71,12 @@ func (s *Server) StartHTTP() error {
 	s.app.Use(fiberrecover.New())
 
 	var dialFunc evsmtp.DialFunc
-	if s.opts.SMTPProxy != "" {
+	if s.opts.Validator.SMTPProxy != "" {
 		dialFunc = func(addr string) (smtp_client.SMTPClient, error) {
-			conn, err := socks.Dial(s.opts.SMTPProxy)("tcp", addr)
+			conn, err := socks.Dial(s.opts.Validator.SMTPProxy)("tcp", addr)
 			if err != nil {
 				log.Logger().Error(fmt.Sprintf("proxy create conn: %s", err),
-					zap.String("proxy", s.opts.SMTPProxy),
+					zap.String("proxy", s.opts.Validator.SMTPProxy),
 					zap.String("address", addr),
 				)
 				return nil, err

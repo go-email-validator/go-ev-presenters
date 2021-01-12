@@ -15,7 +15,7 @@ To change ports use options:
 curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:50052/v1/validation/single
 ```
 
-docker run --rm -e "TOR_INSTANCES=1" -p 16379:16379 evait/multitor
+docker run -it -p 8118:8118 -p 9050:9050 dperson/torproxy
 
 swagger-ui
 http://localhost:50052/swagger-ui/

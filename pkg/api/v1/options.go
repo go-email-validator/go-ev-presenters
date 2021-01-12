@@ -19,7 +19,10 @@ const (
 
 func defaultInstance(opts Options, dialFunc evsmtp.DialFunc) openapi.EmailValidationApiRouter {
 	return NewEmailValidationApiController(EmailValidationApiControllerDTO{
-		Presenter: getPresenter(dialFunc),
+		Presenter: getPresenter(evsmtp.CheckerDTO{
+			DialFunc:  dialFunc,
+			LocalName: opts.Validator.LocalName,
+		}),
 		Matching: map[openapi.ResultType]preparer.Name{
 			openapi.CIEE:                          check_if_email_exist.Name,
 			openapi.CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
@@ -42,17 +45,27 @@ var getPresenter = presenter.NewMultiplePresentersDefault
 
 func NewOptions() Options {
 	return Options{
-		HTTP:  NewHTTPOptions(),
-		Auth:  NewAuthOptions(),
-		Fiber: fiber.Config{DisableStartupMessage: true},
+		Validator: NewValidator(),
+		HTTP:      NewHTTPOptions(),
+		Auth:      NewAuthOptions(),
+		Fiber:     fiber.Config{DisableStartupMessage: true},
 	}
 }
 
 type Options struct {
-	SMTPProxy string
+	Validator Validator
 	HTTP      HTTPOptions
 	Auth      AuthOptions
 	Fiber     fiber.Config
+}
+
+func NewValidator() Validator {
+	return Validator{}
+}
+
+type Validator struct {
+	SMTPProxy string
+	LocalName string
 }
 
 func NewHTTPOptions() HTTPOptions {

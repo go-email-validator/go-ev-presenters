@@ -139,8 +139,8 @@ github.com/getkin/kin-openapi v0.35.0 h1:YoJusew7Es36hSpnEx3gRL2DGj/82T3j3Akbs9V
 github.com/getkin/kin-openapi v0.35.0/go.mod h1:ZJSfy1PxJv2QQvH9EdBj3nupRTVvV42mkW6zKUlRBwk=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/go-email-validator/go-email-validator v0.0.0-20210111084543-d80dd2c5e7a2 h1:UDOXqtkdla8BuPoj7ERN+KggOB9vQTsw9pKY0ldAyAE=
-github.com/go-email-validator/go-email-validator v0.0.0-20210111084543-d80dd2c5e7a2/go.mod h1:WUmv+KulRTm+n+P4sWsst6JLzi8N2hefGd15D58vebo=
+github.com/go-email-validator/go-email-validator v0.0.0-20210111194946-95ea0901a69b h1:f07bSOhoPLCLBZi8fIn8NB1iYrXyAh8KzE4yFTa6BOY=
+github.com/go-email-validator/go-email-validator v0.0.0-20210111194946-95ea0901a69b/go.mod h1:WsLHxy4fdsouO9LRRLr/DJrQ2XwbBNeKquxAp5kQ9E0=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=

@@ -121,7 +121,7 @@ func reset() {
 var opts Options
 
 func TestMain(m *testing.M) {
-	getPresenter = func(dialFunc evsmtp.DialFunc) presenter.MultiplePresenter {
+	getPresenter = func(_ evsmtp.CheckerDTO) presenter.MultiplePresenter {
 		return presenter.NewMultiplePresenter(valuePresenters)
 	}
 	opts = NewOptions()

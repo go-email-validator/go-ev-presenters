@@ -14,6 +14,8 @@ const (
 	apiKeyEnv               = envPrefix + "API_KEY"
 	smtpProxyFlag           = "smtp-proxy"
 	smtpProxyEnv            = envPrefix + "SMTP_PROXY"
+	localNameFlag           = "localname"
+	localNameEnv            = envPrefix + "LOCALNAME"
 	fiberStartupMessageFlag = "fiber-startup-msg"
 	fiberStartupMessageEnv  = envPrefix + "FIBER_STARTUP_MSG"
 )
@@ -41,10 +43,16 @@ func init() {
 	rootCmd.Flags().StringVarP(&opts.Auth.Key, apiKeyFlag, "a", opts.Auth.Key, "Api key to authorization")
 
 	if smtpProxy := os.Getenv(smtpProxyEnv); smtpProxy != "" {
-		opts.SMTPProxy = smtpProxy
+		opts.Validator.SMTPProxy = smtpProxy
 	}
 
-	rootCmd.Flags().StringVar(&opts.SMTPProxy, smtpProxyFlag, opts.SMTPProxy, "Proxy for smtp calling")
+	rootCmd.Flags().StringVar(&opts.Validator.SMTPProxy, smtpProxyFlag, opts.Validator.SMTPProxy, "Proxy for smtp calling")
+
+	if localName := os.Getenv(localNameEnv); localName != "" {
+		opts.Validator.LocalName = localName
+	}
+
+	rootCmd.Flags().StringVar(&opts.Validator.LocalName, localNameFlag, opts.Validator.LocalName, "LocalName for SMTP HELO command")
 
 	if _, hasFiberStartupMessage := os.LookupEnv(fiberStartupMessageEnv); !hasFiberStartupMessage {
 		fiberStartupMessage = hasFiberStartupMessage
