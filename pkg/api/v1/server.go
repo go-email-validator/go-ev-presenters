@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp/smtp_client"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp/smtpclient"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -53,12 +53,6 @@ func (s *Server) StartHTTP() error {
 	})
 	// logger
 	s.app.Use(func(c *fiber.Ctx) error {
-		defer func() {
-			if err := log.Logger().Sync(); err != nil {
-				fmt.Print(err)
-			}
-		}()
-
 		chainErr := c.Next()
 
 		// TODO Add formatting and fields
@@ -72,7 +66,7 @@ func (s *Server) StartHTTP() error {
 
 	var dialFunc evsmtp.DialFunc
 	if s.opts.Validator.SMTPProxy != "" {
-		dialFunc = func(addr string) (smtp_client.SMTPClient, error) {
+		dialFunc = func(addr string) (smtpclient.SMTPClient, error) {
 			conn, err := socks.Dial(s.opts.Validator.SMTPProxy)("tcp", addr)
 			if err != nil {
 				log.Logger().Error(fmt.Sprintf("proxy create conn: %s", err),
@@ -98,6 +92,11 @@ func (s *Server) StartHTTP() error {
 
 	s.waitGroup.Add(1)
 	go func() {
+		defer func() {
+			if err := log.Logger().Sync(); err != nil {
+				fmt.Print(err)
+			}
+		}()
 		log.Logger().Debug(fmt.Sprintf("HTTP server is starting on %s", s.opts.HTTP.Bind))
 		err = s.app.Listen(s.opts.HTTP.Bind)
 

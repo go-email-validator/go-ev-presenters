@@ -19,22 +19,26 @@ type SmtpPresenter struct {
 	IsGreyListed   bool `json:"is_grey_listed"`
 }
 
-var WithoutErrsSMTPPresenter = SmtpPresenter{
-	CanConnectSmtp: true,
-	HasFullInbox:   false,
-	IsCatchAll:     true,
-	IsDeliverable:  true,
-	IsDisabled:     false,
-	IsGreyListed:   false,
-}
-var FalseSMTPPresenter = SmtpPresenter{
-	CanConnectSmtp: false,
-	HasFullInbox:   false,
-	IsCatchAll:     false,
-	IsDeliverable:  false,
-	IsDisabled:     false,
-	IsGreyListed:   false,
-}
+var (
+	WithoutErrsSMTPPresenter = SmtpPresenter{
+		CanConnectSmtp: true,
+		HasFullInbox:   false,
+		IsCatchAll:     true,
+		IsDeliverable:  true,
+		IsDisabled:     false,
+		IsGreyListed:   false,
+	}
+	FalseSMTPPresenter = SmtpPresenter{
+		CanConnectSmtp: false,
+		HasFullInbox:   false,
+		IsCatchAll:     false,
+		IsDeliverable:  false,
+		IsDisabled:     false,
+		IsGreyListed:   false,
+	}
+	smtpError evsmtp.Error
+	depError  ev.DepsError
+)
 
 type SMTPPreparer struct{}
 
@@ -44,7 +48,6 @@ func (SMTPPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ p
 
 func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ preparer.Options) interface{} {
 	var presenter = WithoutErrsSMTPPresenter
-	var smtpError evsmtp.Error
 	var errString string
 	var errCode int
 
@@ -52,7 +55,7 @@ func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ prep
 	errs = append(errs, result.Warnings()...)
 	for _, err := range errs {
 		if !errors.As(err, &smtpError) {
-			if errors.As(err, &ev.DepsError{}) {
+			if errors.As(err, &depError) {
 				return FalseSMTPPresenter
 			}
 			continue
