@@ -3,8 +3,12 @@ package presenter
 import (
 	"errors"
 	"fmt"
+	"github.com/dgraph-io/ristretto"
+	"github.com/eko/gocache/marshaler"
+	"github.com/eko/gocache/store"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evcache"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
@@ -15,7 +19,7 @@ import (
 )
 
 func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO) MultiplePresenter {
-	/*ristrettoCache, err := ristretto.NewCache(&ristretto.Config{
+	ristrettoCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1000,
 		MaxCost:     100,
 		BufferItems: 64,
@@ -25,43 +29,42 @@ func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO) MultiplePresente
 	}
 	ristrettoStore := store.NewRistretto(ristrettoCache, &store.Options{})
 
-	m := marshaler.New(ristrettoStore)*/
+	m := marshaler.New(ristrettoStore)
 
-	//smtpValidator := ev.NewCacheDecorator(
-	smtpValidator := ev.NewWarningsDecorator(
-		ev.NewSMTPValidator(
-			//evsmtp.NewCheckerCacheRandomRCPT(
-			evsmtp.NewChecker(checkerDTO).(evsmtp.CheckerWithRandomRCPT),
-			/*evcache.NewCacheMarshaller(
-				m,
-				func() interface{} {
-					errs := make([]evsmtp.AliasError, 0)
-					return &errs
-				},
-				nil,
+	smtpValidator := ev.NewCacheDecorator(
+		ev.NewWarningsDecorator(
+			ev.NewSMTPValidator(
+				evsmtp.NewCheckerCacheRandomRCPT(
+					evsmtp.NewChecker(checkerDTO).(evsmtp.CheckerWithRandomRCPT),
+					evcache.NewCacheMarshaller(
+						m,
+						func() interface{} {
+							return new([]error)
+						},
+						nil,
+					),
+					evsmtp.DefaultRandomCacheKeyGetter,
+				),
 			),
-			evsmtp.DefaultRandomCacheKeyGetter,*/
-			//),
-		),
-		ev.NewIsWarning(hashset.New(evsmtp.RandomRCPTStage), func(warningMap ev.WarningSet) ev.IsWarning {
-			return func(err error) bool {
-				errSMTP, ok := err.(evsmtp.Error)
-				if !ok {
-					return false
+			ev.NewIsWarning(hashset.New(evsmtp.RandomRCPTStage), func(warningMap ev.WarningSet) ev.IsWarning {
+				return func(err error) bool {
+					errSMTP, ok := err.(evsmtp.Error)
+					if !ok {
+						return false
+					}
+					return warningMap.Contains(errSMTP.Stage())
 				}
-				return warningMap.Contains(errSMTP.Stage())
-			}
-		}),
-	) /*,
+			}),
+		),
 		evcache.NewCacheMarshaller(
 			m,
 			func() interface{} {
-				return ev.NewValidResult(ev.OtherValidator)
+				return new(ev.ValidationResult)
 			},
 			nil,
 		),
 		ev.EmailCacheKeyGetter,
-	)*/
+	)
 
 	return NewMultiplePresenter(map[preparer.Name]Interface{
 		check_if_email_exist.Name: NewPresenter(
