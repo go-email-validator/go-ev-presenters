@@ -37,7 +37,7 @@ var (
 		IsGreyListed:   false,
 	}
 	smtpError evsmtp.Error
-	depError  ev.DepsError
+	depError  *ev.DepsError
 )
 
 type SMTPPreparer struct{}

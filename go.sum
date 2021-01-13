@@ -151,6 +151,8 @@ github.com/go-email-validator/go-email-validator v0.0.0-20210113201557-ce1d5f8a9
 github.com/go-email-validator/go-email-validator v0.0.0-20210113201557-ce1d5f8a9d93/go.mod h1:92cge5pR6RZjr4E5biImUNDYf57rck1dq1HVREYHPkg=
 github.com/go-email-validator/go-email-validator v0.0.0-20210113211138-dae7dbfcd833 h1:94+848qx74gq2/QmdtlcBI/OIwghCsZ0QRrI3ZSfTXc=
 github.com/go-email-validator/go-email-validator v0.0.0-20210113211138-dae7dbfcd833/go.mod h1:92cge5pR6RZjr4E5biImUNDYf57rck1dq1HVREYHPkg=
+github.com/go-email-validator/go-email-validator v0.0.0-20210113211412-915b377b7ee8 h1:J/keXJoqae1027zGZQL7IqDRWq6llt7DsEdr4KKD7i4=
+github.com/go-email-validator/go-email-validator v0.0.0-20210113211412-915b377b7ee8/go.mod h1:92cge5pR6RZjr4E5biImUNDYf57rck1dq1HVREYHPkg=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
