@@ -9,12 +9,8 @@
 
 package openapi
 
-type EmailRequest struct {
-	Email string `json:"email,omitempty"`
+type EmailRequestGravatar struct {
 
-	Smtp EmailRequestSmtp `json:"smtp,omitempty"`
-
-	Gravatar EmailRequestGravatar `json:"gravatar,omitempty"`
-
-	ResultType ResultType `json:"result_type,omitempty"`
+	// timeout request to gravatar.com
+	Timeout float32 `json:"timeout,omitempty"`
 }

@@ -3,18 +3,12 @@ package v1
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp/smtpclient"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
-	"go.uber.org/zap"
-	"h12.io/socks"
 	"io/ioutil"
-	"net"
 	"net/http"
-	"net/smtp"
 	"strings"
 	"sync"
 )
@@ -64,24 +58,7 @@ func (s *Server) StartHTTP() error {
 	})
 	s.app.Use(fiberrecover.New())
 
-	var dialFunc evsmtp.DialFunc
-	if s.opts.Validator.SMTPProxy != "" {
-		dialFunc = func(addr string) (smtpclient.SMTPClient, error) {
-			conn, err := socks.Dial(s.opts.Validator.SMTPProxy)("tcp", addr)
-			if err != nil {
-				log.Logger().Error(fmt.Sprintf("proxy create conn: %s", err),
-					zap.String("proxy", s.opts.Validator.SMTPProxy),
-					zap.String("address", addr),
-				)
-				return nil, err
-			}
-
-			host, _, _ := net.SplitHostPort(addr)
-			return smtp.NewClient(conn, host)
-		}
-	}
-
-	server := defaultInstance(s.opts, dialFunc)
+	server := defaultInstance(s.opts)
 	s.app.Post("/v1/validation/single", server.EmailValidationSingleValidationPost)
 	s.app.Get("/v1/validation/single/:email", server.EmailValidationSingleValidationGet)
 

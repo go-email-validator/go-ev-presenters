@@ -2,6 +2,7 @@ package check_if_email_exist
 
 import (
 	"github.com/emirpasic/gods/sets/hashset"
+	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
@@ -43,15 +44,16 @@ func TestDepPreparer_Prepare(t *testing.T) {
 
 	opts := preparer.NewOptions(0)
 	for _, tt := range tests {
+		tt := tt
 		if skipEmail.Contains(tt.Input) {
 			t.Logf("skipped %v", tt.Input)
 			continue
 		}
-
 		t.Run(tt.Input, func(t *testing.T) {
+			t.Parallel()
 			email := evmail.FromString(tt.Input)
 
-			resultValidator := validator.Validate(email)
+			resultValidator := validator.Validate(ev.NewInput(email))
 			got := d.Prepare(email, resultValidator, opts)
 			gotPresenter := got.(DepPresenter)
 

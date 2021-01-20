@@ -2,6 +2,7 @@ package mailboxvalidator
 
 import (
 	"github.com/emirpasic/gods/sets/hashset"
+	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
@@ -35,16 +36,19 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 	)
 
 	for _, tt := range tests {
+		tt := tt
 		if skipEmail.Contains(tt.EmailAddress) {
 			t.Logf("skipped %v", tt.EmailAddress)
 			continue
 		}
 
 		t.Run(tt.EmailAddress, func(t *testing.T) {
+			t.Parallel()
+
 			email := EmailFromString(tt.EmailAddress)
 			opts := preparer.NewOptions(tt.TimeTaken)
 
-			resultValidator := validator.Validate(email)
+			resultValidator := validator.Validate(ev.NewInput(email))
 			if gotResult := d.Prepare(email, resultValidator, opts); !reflect.DeepEqual(gotResult, tt) {
 				t.Errorf("Prepare()\n%#v, \n want\n%#v", gotResult, tt)
 			}

@@ -2,6 +2,10 @@ package v1
 
 import (
 	"encoding/json"
+	"github.com/go-email-validator/go-email-validator/pkg/ev"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
+	"github.com/go-email-validator/go-email-validator/pkg/ev/utils"
 	openapi "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
@@ -52,6 +56,9 @@ type emailValidationApiController struct {
 	unmarshal        unmarshal
 }
 
+var smtpDefaultOpts = evsmtp.DefaultOptions()
+var gravatarDefaultOpts = ev.DefaultGravatarOptions()
+
 func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fiber.Ctx) error {
 	if err := e.openApiValidator.Validate(c); err != nil {
 		return Error(c, err)
@@ -65,7 +72,43 @@ func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fi
 	if body.ResultType == "" {
 		body.ResultType = openapi.CIEE
 	}
-	result, err := e.presenter.SingleValidation(body.Email, e.matching[body.ResultType])
+
+	opts := map[ev.ValidatorName]interface{}{
+		ev.SMTPValidatorName: evsmtp.NewOptions(evsmtp.OptionsDTO{
+			EmailFrom: evmail.EmptyEmail(
+				evmail.FromString(body.Smtp.EmailFrom),
+				smtpDefaultOpts.EmailFrom(),
+			),
+			HelloName: utils.DefaultString(
+				body.Smtp.HelloName,
+				smtpDefaultOpts.HelloName(),
+			),
+			Proxy: utils.DefaultString(
+				body.Smtp.Proxy,
+				smtpDefaultOpts.Proxy(),
+			),
+			TimeoutCon: utils.DefaultDuration(
+				OnlyPositiveDuration(SecondDuration(float64(body.Smtp.TimeoutConnection))),
+				gravatarDefaultOpts.Timeout(),
+			),
+			TimeoutResp: utils.DefaultDuration(
+				OnlyPositiveDuration(SecondDuration(float64(body.Smtp.TimeoutResponse))),
+				gravatarDefaultOpts.Timeout(),
+			),
+			Port: utils.DefaultInt(
+				OnlyPositiveInt(int(body.Smtp.Port)),
+				smtpDefaultOpts.Port(),
+			),
+		}),
+		ev.GravatarValidatorName: ev.NewGravatarOptions(ev.GravatarOptionsDTO{
+			Timeout: utils.DefaultDuration(
+				OnlyPositiveDuration(SecondDuration(float64(body.Gravatar.Timeout))),
+				gravatarDefaultOpts.Timeout(),
+			),
+		}),
+	}
+
+	result, err := e.presenter.SingleValidation(body.Email, e.matching[body.ResultType], opts)
 	if err != nil {
 		return Error(c, err)
 	}
@@ -86,7 +129,7 @@ func (e *emailValidationApiController) EmailValidationSingleValidationGet(c *fib
 	}
 	resultType := openapi.ResultType(c.Query("result_type", defaultResultType))
 
-	result, err := e.presenter.SingleValidation(email, e.matching[resultType])
+	result, err := e.presenter.SingleValidation(email, e.matching[resultType], nil)
 	if err != nil {
 		return Error(c, err)
 	}

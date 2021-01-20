@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	openapi "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
@@ -18,6 +19,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 )
@@ -146,8 +148,63 @@ func TestServer_HTTP(t *testing.T) {
 	defer reset()
 
 	tests := depPresenters(t)
+	t.Run("Parallel", func(t *testing.T) {
+		for _, tt := range tests {
+			tt := tt
+			t.Run(tt.args.email+"_"+string(tt.args.resultType), func(t *testing.T) {
+				t.Parallel()
+				url := "http://" + opts.HTTP.Bind + "/v1/validation/single/" + tt.args.email + "?result_type=" + string(tt.args.resultType)
+
+				client := http.Client{
+					Timeout: 10 * time.Second,
+				}
+				resp, err := client.Get(url)
+				require.Equal(t, tt.wantErr, err)
+				defer resp.Body.Close()
+
+				body, err := ioutil.ReadAll(resp.Body)
+				require.Nil(t, err)
+				got := &openapi.OneOfEmailResponse{}
+				err = json.Unmarshal(body, got)
+				require.Nil(t, err)
+
+				if !reflect.DeepEqual(tt.want, got) {
+					t.Errorf("Want\n%v\ngot\n%v", tt.want, got)
+				}
+			})
+		}
+	})
+}
+
+func TestServer_HTTP_FUNC(t *testing.T) {
+	evtests.FunctionalSkip(t)
+
+	// Some data or functional cannot be matched, see more nearby DepPresenter of emails
+	skipEmail := hashset.New(
+		// TODO problem with SMTP, CIEE think that email is not is_catch_all. Need to run and research source code on RUST
+		"sewag33689@itymail.com",
+		/* TODO add proxy to test
+		5.7.1 Service unavailable, Client host [94.181.152.110] blocked using Spamhaus. To request removal from this list see https://www.spamhaus.org/query/ip/94.181.152.110 (AS3130). [BN8NAM12FT053.eop-nam12.prod.protection.outlook.com]
+		*/
+		"salestrade86@hotmail.com",
+		"monicaramirezrestrepo@hotmail.com",
+		// TODO CIEE banned
+		"credit@mail.ru",
+		// TODO need check source code
+		"asdasd@tradepro.net",
+		// TODO need check source code
+		"y-numata@senko.ed.jp",
+	)
+
+	tests := depPresenters(t)
 	for _, tt := range tests {
+		tt := tt
+		if skipEmail.Contains(tt.args.email) {
+			t.Logf("skipped %v", tt.args.email)
+			continue
+		}
 		t.Run(tt.args.email+"_"+string(tt.args.resultType), func(t *testing.T) {
+			t.Parallel()
 			url := "http://" + opts.HTTP.Bind + "/v1/validation/single/" + tt.args.email + "?result_type=" + string(tt.args.resultType)
 
 			client := http.Client{
@@ -162,6 +219,13 @@ func TestServer_HTTP(t *testing.T) {
 			got := &openapi.OneOfEmailResponse{}
 			err = json.Unmarshal(body, got)
 			require.Nil(t, err)
+
+			sort.Strings(got.MxRecords.Records)
+			sort.Strings(got.Mx.Records)
+
+			sort.Strings(tt.want.MxRecords.Records)
+			sort.Strings(tt.want.Mx.Records)
+
 			if !reflect.DeepEqual(tt.want, got) {
 				t.Errorf("Want\n%v\ngot\n%v", tt.want, got)
 			}

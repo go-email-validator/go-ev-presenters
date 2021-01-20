@@ -2,6 +2,7 @@ package prompt_email_verification_api
 
 import (
 	"github.com/emirpasic/gods/sets/hashset"
+	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
@@ -44,15 +45,18 @@ func TestDepPreparer_Prepare(t *testing.T) {
 
 	opts := preparer.NewOptions(0)
 	for _, tt := range tests {
+		tt := tt
 		if skipEmail.Contains(tt.Email) {
 			t.Logf("skipped %v", tt.Email)
 			continue
 		}
 
 		t.Run(tt.Email, func(t *testing.T) {
+			t.Parallel()
+
 			email := EmailFromString(tt.Email)
 
-			resultValidator := validator.Validate(email)
+			resultValidator := validator.Validate(ev.NewInput(email))
 			got := d.Prepare(email, resultValidator, opts)
 			gotPresenter := got.(DepPresenter)
 

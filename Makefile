@@ -50,7 +50,7 @@ generate.openapi:
  	-i $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/api/v1/openapiv3/ev.yaml \
  	-o $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/api/v1/openapiv3/ \
 
-VERSION_PATH := go-email-validator@v0.0.0-20210113201557-ce1d5f8a9d93/
+VERSION_PATH := go-email-validator@v0.0.0-20210119193152-d2b76834008f/
 MOUNT_PATH := `go env GOMODCACHE`/github.com/go-email-validator/
 mount:
 	rm -fr $(MOUNT_PATH)$(VERSION_PATH)

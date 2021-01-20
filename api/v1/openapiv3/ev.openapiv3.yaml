@@ -2,10 +2,12 @@ openapi: 3.0.1
 info:
   title: Email Validator
   version: 0.0.1
+  description: |
+    All timeouts are set in seconds with nanosecond precision. For example, 1.505402 is 1 second, 505 milliseconds and 402 microseconds.
 servers:
   - url: /
 security:
-  - BearerAuth: []
+  - BearerAuth: [ ]
 components:
   schemas:
     ResultType:
@@ -174,7 +176,38 @@ components:
       properties:
         email:
           type: string
-        resultType:
+        smtp:
+          type: object
+          properties:
+            email_from:
+              type: string
+              format: email
+            hello_name:
+              type: string
+            proxy:
+              type: string
+              format: uri
+              description: socks proxy in format schema://username:password@host:port
+            timeout_connection:
+              type: number
+              description: timeout creating smtp connection
+              default: &TimeoutDefault 5.0
+            timeout_response:
+              type: number
+              description: timeout of communication with smtp server
+              default: *TimeoutDefault
+            port:
+              type: integer
+              description: smtp port remote server
+              format: int32
+        gravatar:
+          type: object
+          properties:
+            timeout:
+              type: number
+              description: timeout request to gravatar.com
+              default: *TimeoutDefault
+        result_type:
           $ref: '#/components/schemas/ResultType'
     EmailResponse:
       oneOf:
@@ -217,6 +250,7 @@ paths:
       tags:
         - EmailValidation
       operationId: EmailValidation_singleValidation_get
+      description: POST request contains additional parameters for detailed configuration
       parameters:
         - name: email
           in: path
@@ -227,16 +261,7 @@ paths:
           in: query
           description: *ResultTypeDescription
           schema:
-            type: string
-            default: CHECK_IF_EMAIL_EXIST
-            enum:
-              - CHECK_IF_EMAIL_EXIST
-              - CIEE
-              - MAILBOXVALIDATOR
-              - MAIL_BOX_VALIDATOR
-              - MBV
-              - PROMPT_EMAIL_VERIFICATION_API
-              - PEVA
+            $ref: '#/components/schemas/ResultType'
       responses:
         200:
           description: A successful response.

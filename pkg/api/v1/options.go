@@ -17,11 +17,14 @@ const (
 	SwaggerPath     = "api/v1/openapiv3/ev.openapiv3.yaml"
 )
 
-func defaultInstance(opts Options, dialFunc evsmtp.DialFunc) openapi.EmailValidationApiRouter {
+func defaultInstance(opts Options) openapi.EmailValidationApiRouter {
 	return NewEmailValidationApiController(EmailValidationApiControllerDTO{
 		Presenter: getPresenter(evsmtp.CheckerDTO{
-			DialFunc:  dialFunc,
-			LocalName: opts.Validator.LocalName,
+			SendMailFactory: evsmtp.NewSendMailFactory(evsmtp.H12IODial, nil),
+			Options: evsmtp.NewOptions(evsmtp.OptionsDTO{
+				HelloName: opts.Validator.HelloName,
+				Proxy:     opts.Validator.SMTPProxy,
+			}),
 		}),
 		Matching: map[openapi.ResultType]preparer.Name{
 			openapi.CIEE:                          check_if_email_exist.Name,
@@ -65,7 +68,7 @@ func NewValidator() Validator {
 
 type Validator struct {
 	SMTPProxy string
-	LocalName string
+	HelloName string
 }
 
 func NewHTTPOptions() HTTPOptions {

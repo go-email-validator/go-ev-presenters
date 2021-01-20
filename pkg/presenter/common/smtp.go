@@ -36,8 +36,6 @@ var (
 		IsDisabled:     false,
 		IsGreyListed:   false,
 	}
-	smtpError evsmtp.Error
-	depError  *ev.DepsError
 )
 
 type SMTPPreparer struct{}
@@ -50,6 +48,8 @@ func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ prep
 	var presenter = WithoutErrsSMTPPresenter
 	var errString string
 	var errCode int
+	var smtpError evsmtp.Error
+	var depError *ev.DepsError
 
 	errs := result.Errors()
 	errs = append(errs, result.Warnings()...)
@@ -64,11 +64,10 @@ func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ prep
 		sourceErr := errors.Unwrap(smtpError)
 		errString = strings.ToLower(sourceErr.Error())
 
+		errCode = 0
 		switch v := sourceErr.(type) {
 		case *textproto.Error:
 			errCode = v.Code
-		default:
-			errCode = 0
 		}
 		if strings.Contains(errString, "greylist") {
 			presenter.IsGreyListed = true
