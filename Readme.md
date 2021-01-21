@@ -1,24 +1,24 @@
 # Test
 
 ```bash
-docker run -p 50051:50051 -p 50052:50052 maranqz/go-email-validator
+docker run -p 8080:8080 maranqz/go-email-validator
 
-docker run -p 50051:50051 -p 50052:50052 maranqz/go-email-validator --smtp-proxy=socks5://username:password@host:port
+docker run -p 8080:8080 maranqz/go-email-validator --smtp-proxy=socks5://username:password@host:port
 ```
 
-Where 50051 is GRPC and 50052 is REST.
+Where 8080 is REST.
 To change ports use options:
-    --grpc-bind=0.0.0.0:50051
-    --http-bind=0.0.0.0:50052
+    --http-bind=0.0.0.0:8080
 
 ```bash
-curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:50052/v1/validation/single
+curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:8080/v1/validation/single
 ```
 
+To run tor socks for testing
 docker run -it -p 8118:8118 -p 9050:9050 dperson/torproxy
 
 swagger-ui
-http://localhost:50052/swagger-ui/
+http://localhost:8080/swagger-ui/
 
 Where result_type is enum for choosing of viewing:
 * 0 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
@@ -30,7 +30,7 @@ Probably some message from SMTP server would be on different languages.
 
 ## Problems
 
-Some checker providers are banned by disposable email hosts  
+Some checker providers are banned by disposable email hosts.
 
 
 ## TODO

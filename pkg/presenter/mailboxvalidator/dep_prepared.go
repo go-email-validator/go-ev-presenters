@@ -63,6 +63,7 @@ func (d DepPreparerForView) CanPrepare(email evmail.Address, result ev.Validatio
 	return d.d.CanPrepare(email, result, opts)
 }
 
+// TODO add processing of "-" in mailbox validator, for example zxczxczxc@joycasinoru
 func (d DepPreparerForView) Prepare(email evmail.Address, resultInterface ev.ValidationResult, opts preparer.Options) interface{} {
 	depPresenter := d.d.Prepare(email, resultInterface, opts).(DepPresenter)
 

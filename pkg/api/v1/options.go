@@ -10,6 +10,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 	"github.com/gofiber/fiber/v2"
+	"time"
 )
 
 const (
@@ -51,7 +52,13 @@ func NewOptions() Options {
 		Validator: NewValidator(),
 		HTTP:      NewHTTPOptions(),
 		Auth:      NewAuthOptions(),
-		Fiber:     fiber.Config{DisableStartupMessage: true},
+		Fiber: fiber.Config{
+			DisableStartupMessage: true,
+			// TODO move to cli config
+			IdleTimeout:  5 * time.Second,
+			WriteTimeout: 20 * time.Second,
+			ReadTimeout:  20 * time.Second,
+		},
 	}
 }
 

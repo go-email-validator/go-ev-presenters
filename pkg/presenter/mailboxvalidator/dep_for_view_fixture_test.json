@@ -73,7 +73,7 @@
     "is_domain": "False",
     "is_smtp": "False",
     "is_verified": "False",
-    "is_server_down": "False",
+    "is_server_down": "True",
     "is_greylisted": "False",
     "is_disposable": "False",
     "is_suppressed": "False",
