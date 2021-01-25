@@ -50,7 +50,7 @@ generate.openapi:
  	-i $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/api/v1/openapiv3/ev.yaml \
  	-o $(GOPATH)/src/github.com/go-email-validator/go-ev-presenters/pkg/api/v1/openapiv3/ \
 
-VERSION_PATH := go-email-validator@v0.0.0-20210119193152-d2b76834008f/
+VERSION_PATH := go-email-validator@v0.0.0-20210125152741-cc8c6cf8638a
 MOUNT_PATH := `go env GOMODCACHE`/github.com/go-email-validator/
 mount:
 	rm -fr $(MOUNT_PATH)$(VERSION_PATH)
@@ -133,10 +133,10 @@ go.cover.full: go.test go.cover
 go.cover.total:
 	$(GO_COVER) | grep total | awk '{print substr($$3, 1, length($$3)-1)}'
 
-DOCKER_USER="$(USER_ID):$(USER_GROUP)"
+DOCKER_USER_RUN="$(USER_ID):$(USER_GROUP)"
 
 openapitools.gen:
-	docker run --user "$(DOCKER_USER)" --rm -v "$(pwd):/local" openapitools/openapi-generator-cli generate \
+	docker run --user "$(DOCKER_USER_RUN)" --rm -v "$(pwd):/local" openapitools/openapi-generator-cli generate \
 	-g go-server \
 	-o /local/pkg/api/v1 \
 	-i /local/api/v1/openapiv3/ev.openapiv3.yaml
@@ -147,3 +147,6 @@ openapitools.gen:
  	go.mod \
 	Dockerfile \
 	README.md
+
+assets:
+	statik -src=. -include=*.yaml

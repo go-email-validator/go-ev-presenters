@@ -33,6 +33,7 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 		"monicaramirezrestrepo@hotmail.com",
 		"y-numata@senko.ed.jp",
 		"pr@yandex-team.ru",
+		"asdasd@tradepro.net",
 	)
 
 	for _, tt := range tests {

@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"testing"
@@ -120,27 +119,21 @@ func reset() {
 	}
 }
 
-var opts Options
-
-func startServer() *Server {
-	opts = NewOptions()
-
-	var err error
-	// Need to correct run of tests
-	opts.HTTP.OpenApiPath, err = filepath.Abs("../../../" + opts.HTTP.OpenApiPath)
-	if err != nil {
-		panic(err)
+func startServer(InOpts *Options) (*Server, Options) {
+	opts := NewOptions()
+	if InOpts != nil {
+		opts = *InOpts
 	}
 
 	opts.Fiber.IdleTimeout = 500 * time.Millisecond
 
-	server := NewServer(opts)
-	err = server.Start()
+	server := NewServer(DefaultFiberFactory, opts)
+	err := server.Start()
 	if err != nil {
 		panic(err)
 	}
 
-	return &server
+	return &server, opts
 }
 
 func shutdownServer(server *Server) {
@@ -152,10 +145,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestServer_HTTP(t *testing.T) {
-	getPresenter = func(_ evsmtp.CheckerDTO) presenter.MultiplePresenter {
+	getPresenter = func(_ evsmtp.CheckerDTO, _ Options) presenter.MultiplePresenter {
 		return presenter.NewMultiplePresenter(valuePresenters)
 	}
-	server := startServer()
+	server, opts := startServer(nil)
 	defer reset()
 	defer shutdownServer(server)
 
@@ -191,7 +184,7 @@ func TestServer_HTTP(t *testing.T) {
 func TestServer_HTTP_FUNC(t *testing.T) {
 	evtests.FunctionalSkip(t)
 
-	server := startServer()
+	server, opts := startServer(nil)
 	defer shutdownServer(server)
 
 	// Some data or functional cannot be matched, see more nearby DepPresenter of emails

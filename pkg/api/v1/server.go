@@ -4,25 +4,43 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/go-email-validator/go-ev-presenters/pkg/log"
+	"github.com/go-email-validator/go-ev-presenters/statik"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
-	"io/ioutil"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"sync"
 )
 
-func NewServer(opts Options) Server {
+func NewServer(fiberFactory FiberFactory, opts Options) Server {
+	if fiberFactory == nil {
+		fiberFactory = DefaultFiberFactory
+	}
+
+	if opts.IsVerbose {
+		opts.Fiber.DisableStartupMessage = false
+	}
+
+	if opts.IsVerbose {
+		l, err := zap.NewDevelopment()
+		if err != nil {
+			panic(err)
+		}
+		log.SetLogger(l)
+	}
+
 	return Server{
-		opts: opts,
+		fiberFactory: fiberFactory,
+		opts:         opts,
 	}
 }
 
 type Server struct {
-	app       *fiber.App
-	opts      Options
-	waitGroup sync.WaitGroup
+	fiberFactory FiberFactory
+	app          *fiber.App
+	opts         Options
+	waitGroup    sync.WaitGroup
 }
 
 func (s *Server) Start() error {
@@ -34,33 +52,7 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) StartHTTP() error {
-	s.app = fiber.New(s.opts.Fiber)
-	// Show error openapi format
-	s.app.Use(func(c *fiber.Ctx) error {
-		chainErr := c.Next()
-
-		if chainErr != nil {
-			return Error(c, chainErr)
-		}
-
-		return chainErr
-	})
-	// logger
-	s.app.Use(func(c *fiber.Ctx) error {
-		chainErr := c.Next()
-
-		// TODO Add formatting and fields
-		if chainErr != nil {
-			log.Logger().Error(chainErr.Error())
-		}
-
-		return chainErr
-	})
-	s.app.Use(fiberrecover.New())
-
-	server := defaultInstance(s.opts)
-	s.app.Post("/v1/validation/single", server.EmailValidationSingleValidationPost)
-	s.app.Get("/v1/validation/single/:email", server.EmailValidationSingleValidationGet)
+	s.app = s.fiberFactory(DefaultInstance(s.opts), s.opts)
 
 	err := s.addSwagger()
 	if err != nil {
@@ -87,7 +79,7 @@ func (s *Server) StartHTTP() error {
 }
 
 func (s *Server) addSwagger() error {
-	openapi, err := ioutil.ReadFile(s.opts.HTTP.OpenApiPath)
+	openapi, err := statik.ReadFile(s.opts.HTTP.OpenApiPath)
 	if err != nil {
 		return err
 	}

@@ -2,15 +2,11 @@ package openapi
 
 import (
 	"bytes"
-	"context"
-	"errors"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
+	"github.com/go-email-validator/go-ev-presenters/statik"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
-)
-
-var (
-	ErrAuthApiKey = errors.New("apiKey is incorrect")
 )
 
 type Validator interface {
@@ -18,16 +14,17 @@ type Validator interface {
 }
 
 func RouterFromPath(path string) *openapi3filter.Router {
-	return openapi3filter.NewRouter().WithSwaggerFromFile(path)
-}
-
-func AuthenticationFuncWithKey(apiKey string) func(c context.Context, input *openapi3filter.AuthenticationInput) error {
-	return func(c context.Context, input *openapi3filter.AuthenticationInput) error {
-		if input.RequestValidationInput.Request.Header.Get(input.SecurityScheme.Name) != apiKey {
-			return input.NewError(ErrAuthApiKey)
-		}
-		return nil
+	openApiData, err := statik.ReadFile(path)
+	if err != nil {
+		panic(err)
 	}
+	router := openapi3.NewSwaggerLoader()
+	swagger, err := router.LoadSwaggerFromData(openApiData)
+	if err != nil {
+		panic(err)
+	}
+
+	return openapi3filter.NewRouter().WithSwagger(swagger)
 }
 
 func NewValidator(router *openapi3filter.Router, options *openapi3filter.Options) Validator {
@@ -44,6 +41,7 @@ type validator struct {
 
 func (v *validator) Validate(c *fiber.Ctx) error {
 	httpReq, _ := http.NewRequest(c.Method(), c.Path(), bytes.NewReader(c.Body()))
+	httpReq.RemoteAddr = c.Context().RemoteIP().String()
 
 	c.Request().Header.VisitAll(func(k, v []byte) {
 		sk := string(k)

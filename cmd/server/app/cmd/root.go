@@ -3,36 +3,19 @@ package cmd
 import (
 	"fmt"
 	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
-	"github.com/go-email-validator/go-ev-presenters/pkg/log"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-var opts = v1.NewOptions()
+var opts = v1.OptionsFromEnvironment()
 
 var rootCmd = &cobra.Command{
 	Use:  "ev",
 	Long: "start HTTP server",
-	PreRun: func(cmd *cobra.Command, args []string) {
-		if isVerbose {
-			fiberStartupMessage = true
-		}
-
-		opts.Fiber.DisableStartupMessage = !fiberStartupMessage
-	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if isVerbose {
-			l, err := zap.NewDevelopment()
-			if err != nil {
-				panic(err)
-			}
-			log.SetLogger(l)
-		}
-
-		serv := v1.NewServer(opts)
+		serv := v1.NewServer(v1.DefaultFiberFactory, opts)
 
 		die := make(chan os.Signal, 1)
 		signal.Notify(die, os.Interrupt, os.Kill, syscall.SIGTERM)
@@ -45,7 +28,6 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		serv.Wait()
 	},
 }

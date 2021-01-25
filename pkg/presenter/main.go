@@ -3,87 +3,11 @@ package presenter
 import (
 	"errors"
 	"fmt"
-	"github.com/dgraph-io/ristretto"
-	"github.com/eko/gocache/marshaler"
-	"github.com/eko/gocache/store"
-	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/evcache"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
-	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 	"time"
 )
-
-func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO) MultiplePresenter {
-	ristrettoCache, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1000,
-		MaxCost:     100,
-		BufferItems: 64,
-	})
-	if err != nil {
-		panic(err)
-	}
-	ristrettoStore := store.NewRistretto(ristrettoCache, &store.Options{})
-
-	m := marshaler.New(ristrettoStore)
-
-	smtpValidator := ev.NewCacheDecorator(
-		ev.NewWarningsDecorator(
-			ev.NewSMTPValidator(
-				//evsmtp.NewCheckerCacheRandomRCPT(
-				evsmtp.NewChecker(checkerDTO).(evsmtp.CheckerWithRandomRCPT),
-				//	evcache.NewCacheMarshaller(
-				//		m,
-				//		func() interface{} {
-				//			return new([]error)
-				//		},
-				//		nil,
-				//	),
-				//	evsmtp.DefaultRandomCacheKeyGetter,
-				//),
-			),
-			ev.NewIsWarning(hashset.New(evsmtp.RandomRCPTStage), func(warningMap ev.WarningSet) ev.IsWarning {
-				return func(err error) bool {
-					errSMTP, ok := err.(evsmtp.Error)
-					if !ok {
-						return false
-					}
-					return warningMap.Contains(errSMTP.Stage())
-				}
-			}),
-		),
-		evcache.NewCacheMarshaller(
-			m,
-			func() interface{} {
-				return new(ev.ValidationResult)
-			},
-			nil,
-		),
-		ev.EmailCacheKeyGetter,
-	)
-
-	return NewMultiplePresenter(map[preparer.Name]Interface{
-		check_if_email_exist.Name: NewPresenter(
-			evmail.FromString,
-			check_if_email_exist.NewDepValidator(smtpValidator),
-			check_if_email_exist.NewDepPreparerDefault(),
-		),
-		mailboxvalidator.Name: NewPresenter(
-			mailboxvalidator.EmailFromString,
-			mailboxvalidator.NewDepValidator(smtpValidator),
-			mailboxvalidator.NewDepPreparerForViewDefault(),
-		),
-		prompt_email_verification_api.Name: NewPresenter(
-			prompt_email_verification_api.EmailFromString,
-			prompt_email_verification_api.NewDepValidator(smtpValidator),
-			prompt_email_verification_api.NewDepPreparerDefault(),
-		),
-	})
-}
 
 type MultiplePresenter interface {
 	SingleValidation(email string, name preparer.Name, opts map[ev.ValidatorName]interface{}) (interface{}, error)

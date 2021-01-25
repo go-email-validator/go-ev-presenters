@@ -26,14 +26,14 @@ components:
         - MBV
         - PROMPT_EMAIL_VERIFICATION_API
         - PEVA
-    check_if_email_exist_misc:
+    CheckIfEmailExistMisc:
       type: object
       properties:
         is_disposable:
           type: boolean
         is_role_account:
           type: boolean
-    check_if_email_exist_smtp:
+    CheckIfEmailExistSMTP:
       type: object
       properties:
         can_connect_smtp:
@@ -46,7 +46,7 @@ components:
           type: boolean
         is_disabled:
           type: boolean
-    check_if_email_exist_syntax:
+    CheckIfEmailExistSyntax:
       type: object
       properties:
         address:
@@ -57,7 +57,7 @@ components:
           type: boolean
         username:
           type: string
-    check_if_email_exist_mx:
+    CheckIfEmailExistMX:
       type: object
       properties:
         accepts_mail:
@@ -66,7 +66,7 @@ components:
           type: array
           items:
             type: string
-    check_if_email_exist_result:
+    CheckIfEmailExistResult:
       type: object
       properties:
         input:
@@ -74,16 +74,16 @@ components:
         is_reachable:
           type: string
         misc:
-          $ref: '#/components/schemas/check_if_email_exist_misc'
+          $ref: '#/components/schemas/CheckIfEmailExistMisc'
         mx:
-          $ref: '#/components/schemas/check_if_email_exist_mx'
+          $ref: '#/components/schemas/CheckIfEmailExistMX'
         smtp:
-          $ref: '#/components/schemas/check_if_email_exist_smtp'
+          $ref: '#/components/schemas/CheckIfEmailExistSMTP'
         syntax:
-          $ref: '#/components/schemas/check_if_email_exist_syntax'
+          $ref: '#/components/schemas/CheckIfEmailExistSyntax'
         error:
           type: string
-    mailboxvalidator_result:
+    MailboxvalidatorResult:
       type: object
       properties:
         email_address:
@@ -127,7 +127,7 @@ components:
           type: string
         error_message:
           type: string
-    prompt_email_verification_api_result:
+    PromptEmailVerificationApiResult:
       type: object
       properties:
         can_connect_smtp:
@@ -147,12 +147,12 @@ components:
         is_role_account:
           type: boolean
         mx_records:
-          $ref: '#/components/schemas/prompt_email_verification_api_mx'
+          $ref: '#/components/schemas/PromptEmailVerificationApiMX'
         syntax_valid:
           type: boolean
         message:
           type: string
-    prompt_email_verification_api_mx:
+    PromptEmailVerificationApiMX:
       type: object
       properties:
         accepts_mail:
@@ -211,14 +211,19 @@ components:
           $ref: '#/components/schemas/ResultType'
     EmailResponse:
       oneOf:
-        - $ref: '#/components/schemas/check_if_email_exist_result'
-        - $ref: '#/components/schemas/mailboxvalidator_result'
-        - $ref: '#/components/schemas/prompt_email_verification_api_result'
+        - $ref: '#/components/schemas/CheckIfEmailExistResult'
+        - $ref: '#/components/schemas/MailboxvalidatorResult'
+        - $ref: '#/components/schemas/PromptEmailVerificationApiResult'
   securitySchemes:
     BearerAuth:
       type: apiKey
       name: Authorization
       in: header
+      x-amazon-apigateway-authtype: custom
+      x-amazon-apigateway-authorizer:
+        type: token
+        authorizerCredentials: ${authorizerCredentials}
+        authorizerUri: ${authorizerUri}
 paths:
   /v1/validation/single:
     post:

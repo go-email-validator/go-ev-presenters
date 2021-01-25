@@ -1,26 +1,22 @@
 package cmd
 
 import (
+	v1 "github.com/go-email-validator/go-ev-presenters/pkg/api/v1"
 	"os"
 )
 
 const (
-	envPrefix               = "EV_"
 	httpBindFlag            = "http-bind"
-	httpBindEnv             = envPrefix + "HTTP_BIND"
 	verboseFlag             = "verbose"
-	verboseEnv              = envPrefix + "VERBOSE"
-	apiKeyFlag              = "api-key"
-	apiKeyEnv               = envPrefix + "API_KEY"
+	headersFlag             = "headers"
+	ipsFlag                 = "ips"
 	smtpProxyFlag           = "smtp-proxy"
-	smtpProxyEnv            = envPrefix + "SMTP_PROXY"
 	helloNameFlag           = "localname"
-	helloNameEnv            = envPrefix + "HELLONAME"
+	memCachedFlag           = "memcached"
+	ristrettoFlag           = "ristretto"
 	fiberStartupMessageFlag = "fiber-startup-msg"
-	fiberStartupMessageEnv  = envPrefix + "FIBER_STARTUP_MSG"
 )
 
-var isVerbose bool
 var fiberStartupMessage bool
 
 func init() {
@@ -29,33 +25,28 @@ func init() {
 		opts.HTTP.Bind = "0.0.0.0:" + gatewayPort
 	}
 
-	if bind := os.Getenv(httpBindEnv); bind != "" {
-		opts.HTTP.Bind = bind
-	}
 	rootCmd.Flags().StringVar(&opts.HTTP.Bind, httpBindFlag, opts.HTTP.Bind, "HTTP bind address")
 
-	_, isVerbose = os.LookupEnv(verboseEnv)
-	rootCmd.Flags().BoolVarP(&isVerbose, verboseFlag, "v", isVerbose, "Show DEBUG log information")
+	_, opts.IsVerbose = os.LookupEnv(v1.VerboseEnv)
+	rootCmd.Flags().BoolVarP(&opts.IsVerbose, verboseFlag, "v", opts.IsVerbose, "Show DEBUG log information")
 
-	if apiKey := os.Getenv(apiKeyEnv); apiKey != "" {
-		opts.Auth.Key = apiKey
-	}
-	rootCmd.Flags().StringVarP(&opts.Auth.Key, apiKeyFlag, "a", opts.Auth.Key, "Api key to authorization")
+	rootCmd.Flags().StringToStringVar(&opts.Auth.Headers, headersFlag, opts.Auth.Headers, "Map headers values")
 
-	if smtpProxy := os.Getenv(smtpProxyEnv); smtpProxy != "" {
-		opts.Validator.SMTPProxy = smtpProxy
-	}
+	rootCmd.Flags().StringArrayVar(&opts.Auth.IPs, ipsFlag, opts.Auth.IPs, "List acceptable ips")
 
 	rootCmd.Flags().StringVar(&opts.Validator.SMTPProxy, smtpProxyFlag, opts.Validator.SMTPProxy, "Proxy for smtp calling")
 
-	if helloName := os.Getenv(helloNameEnv); helloName != "" {
+	if helloName := os.Getenv(v1.HelloNameEnv); helloName != "" {
 		opts.Validator.HelloName = helloName
 	}
 
+	rootCmd.Flags().StringArrayVar(&opts.Validator.Memcached, memCachedFlag, opts.Validator.Memcached, "List of memcached servers")
+
+	rootCmd.Flags().BoolVar(&opts.Validator.Ristretto, ristrettoFlag, opts.Validator.Ristretto, "Is Ristretto active?")
+
 	rootCmd.Flags().StringVar(&opts.Validator.HelloName, helloNameFlag, opts.Validator.HelloName, "HelloName for SMTP HELO command")
 
-	if _, hasFiberStartupMessage := os.LookupEnv(fiberStartupMessageEnv); !hasFiberStartupMessage {
-		fiberStartupMessage = hasFiberStartupMessage
-	}
-	rootCmd.Flags().BoolVar(&fiberStartupMessage, fiberStartupMessageFlag, fiberStartupMessage, "Show or not Fiber startup message")
+	rootCmd.Flags().BoolVar(&fiberStartupMessage, fiberStartupMessageFlag, !opts.Fiber.DisableStartupMessage, "Show or not Fiber startup message")
+
+	opts.Fiber.DisableStartupMessage = !fiberStartupMessage
 }
