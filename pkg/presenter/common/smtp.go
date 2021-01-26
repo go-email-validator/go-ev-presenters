@@ -53,6 +53,7 @@ func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ prep
 
 	errs := result.Errors()
 	errs = append(errs, result.Warnings()...)
+
 	for _, err := range errs {
 		if !errors.As(err, &smtpError) {
 			if errors.As(err, &depError) {

@@ -27,8 +27,8 @@ const (
 	HeadersEnv             = EnvPrefix + "HEADERS"
 	IPsEnv                 = EnvPrefix + "IPS"
 	SMTPProxyEnv           = EnvPrefix + "SMTP_PROXY"
-	MemcachedEnv           = EnvPrefix + "Memcached"
-	RistrettoEnv           = EnvPrefix + "Ristretto"
+	MemcachedEnv           = EnvPrefix + "MEMCACHED"
+	RistrettoEnv           = EnvPrefix + "RISTRETTO"
 	HelloNameEnv           = EnvPrefix + "HELLONAME"
 	FiberStartupMessageEnv = EnvPrefix + "FIBER_STARTUP_MSG"
 )

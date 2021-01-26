@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/getkin/kin-openapi/openapi3filter"
+	"github.com/gofiber/fiber/v2"
+	"strings"
 )
 
 var (
@@ -35,7 +37,17 @@ func AuthenticationFuncIPs(opts AuthOptions, next AuthFunc) AuthFunc {
 	IIPs = nil
 
 	return func(c context.Context, input *openapi3filter.AuthenticationInput) error {
-		if !IPs.Contains(input.RequestValidationInput.Request.RemoteAddr) {
+		request := input.RequestValidationInput.Request
+		requestIPs := append([]string{request.RemoteAddr}, strings.Split(request.Header.Get(fiber.HeaderXForwardedFor), ", ")...)
+
+		isInvalidIP := true
+		for _, requestIP := range requestIPs {
+			if IPs.Contains(requestIP) {
+				isInvalidIP = false
+				break
+			}
+		}
+		if isInvalidIP {
 			return input.NewError(ErrAuthApiKey)
 		}
 

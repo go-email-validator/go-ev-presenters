@@ -6,8 +6,8 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-email-validator/go-ev-presenters/statik"
 	"github.com/gofiber/fiber/v2"
-	"log"
 	"net/http"
+	"strings"
 )
 
 type Validator interface {
@@ -43,9 +43,6 @@ type validator struct {
 func (v *validator) Validate(c *fiber.Ctx) error {
 	httpReq, _ := http.NewRequest(c.Method(), c.Path(), bytes.NewReader(c.Body()))
 	httpReq.RemoteAddr = c.Context().RemoteIP().String()
-	log.Println("RemoteAddr", httpReq.RemoteAddr)
-	log.Println("IP", c.IP())
-	log.Println("IPs", c.IPs())
 
 	c.Request().Header.VisitAll(func(k, v []byte) {
 		sk := string(k)
@@ -53,6 +50,8 @@ func (v *validator) Validate(c *fiber.Ctx) error {
 		switch sk {
 		case "Transfer-Encoding":
 			httpReq.TransferEncoding = append(httpReq.TransferEncoding, sv)
+		case fiber.HeaderXForwardedFor:
+			httpReq.Header.Set(fiber.HeaderXForwardedFor, strings.Join(c.IPs(), ", "))
 		default:
 			httpReq.Header.Set(sk, sv)
 		}
