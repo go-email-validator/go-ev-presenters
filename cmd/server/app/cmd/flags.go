@@ -15,6 +15,7 @@ const (
 	memCachedFlag           = "memcached"
 	ristrettoFlag           = "ristretto"
 	fiberStartupMessageFlag = "fiber-startup-msg"
+	showOpenApiFlag         = "openapi"
 )
 
 var fiberStartupMessage bool
@@ -47,6 +48,8 @@ func init() {
 	rootCmd.Flags().StringVar(&opts.Validator.HelloName, helloNameFlag, opts.Validator.HelloName, "HelloName for SMTP HELO command")
 
 	rootCmd.Flags().BoolVar(&fiberStartupMessage, fiberStartupMessageFlag, !opts.Fiber.DisableStartupMessage, "Show or not Fiber startup message")
+
+	rootCmd.Flags().BoolVar(&opts.HTTP.ShowOpenApi, showOpenApiFlag, opts.HTTP.ShowOpenApi, "Show OpenApi")
 
 	opts.Fiber.DisableStartupMessage = !fiberStartupMessage
 }

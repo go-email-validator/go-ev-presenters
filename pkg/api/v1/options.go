@@ -13,6 +13,7 @@ import (
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
 	"github.com/gofiber/fiber/v2"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -31,6 +32,7 @@ const (
 	RistrettoEnv           = EnvPrefix + "RISTRETTO"
 	HelloNameEnv           = EnvPrefix + "HELLONAME"
 	FiberStartupMessageEnv = EnvPrefix + "FIBER_STARTUP_MSG"
+	ShowOpenApiEnv         = EnvPrefix + "OPENAPI"
 )
 
 func DefaultInstance(opts Options) openapi.EmailValidationApiRouter {
@@ -112,12 +114,22 @@ func OptionsFromEnvironment() Options {
 		opts.Validator.Memcached = readAsCSVSilence(memCached)
 	}
 
-	if _, ristretto := os.LookupEnv(RistrettoEnv); ristretto {
-		opts.Validator.Ristretto = ristretto
+	if ristretto, hasRistretto := os.LookupEnv(RistrettoEnv); hasRistretto {
+		if ristrettoBool, err := strconv.ParseBool(ristretto); err == nil {
+			opts.Validator.Ristretto = ristrettoBool
+		}
 	}
 
-	if _, hasFiberStartupMessage := os.LookupEnv(FiberStartupMessageEnv); !hasFiberStartupMessage {
-		opts.Fiber.DisableStartupMessage = !hasFiberStartupMessage
+	if fiberStartupMessage, hasFiberStartupMessage := os.LookupEnv(FiberStartupMessageEnv); hasFiberStartupMessage {
+		if fiberStartupMessageBool, err := strconv.ParseBool(fiberStartupMessage); err == nil {
+			opts.Fiber.DisableStartupMessage = !fiberStartupMessageBool
+		}
+	}
+
+	if showOpenApi, hasShowOpenApi := os.LookupEnv(ShowOpenApiEnv); hasShowOpenApi {
+		if showOpenApiBool, err := strconv.ParseBool(showOpenApi); err == nil {
+			opts.HTTP.ShowOpenApi = showOpenApiBool
+		}
 	}
 
 	return opts
@@ -151,6 +163,7 @@ func NewHTTPOptions() HTTPOptions {
 
 type HTTPOptions struct {
 	Bind        string
+	ShowOpenApi bool
 	OpenApiPath string
 }
 

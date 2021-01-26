@@ -187,7 +187,9 @@ components:
             proxy:
               type: string
               format: uri
-              description: socks proxy in format schema://username:password@host:port
+              description: |
+                Versions - SOCKS4, SOCKS4A and SOCKS5.
+                Format -  schema://username:password@host:port.
             timeout_connection:
               type: number
               description: timeout creating smtp connection
@@ -200,13 +202,13 @@ components:
               type: integer
               description: smtp port remote server
               format: int32
-        gravatar:
-          type: object
-          properties:
-            timeout:
-              type: number
-              description: timeout request to gravatar.com
-              default: *TimeoutDefault
+#        gravatar:
+#          type: object
+#          properties:
+#            timeout:
+#              type: number
+#              description: timeout request to gravatar.com
+#              default: *TimeoutDefault
         result_type:
           $ref: '#/components/schemas/ResultType'
     EmailResponse:

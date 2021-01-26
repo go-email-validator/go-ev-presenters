@@ -79,6 +79,10 @@ func (s *Server) StartHTTP() error {
 }
 
 func (s *Server) addSwagger() error {
+	if !s.opts.HTTP.ShowOpenApi {
+		return nil
+	}
+
 	openapi, err := statik.ReadFile(s.opts.HTTP.OpenApiPath)
 	if err != nil {
 		return err
