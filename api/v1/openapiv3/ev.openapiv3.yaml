@@ -176,14 +176,19 @@ components:
       properties:
         email:
           type: string
+          example: SOME.EXISTING.EMAIL@domain.com
         smtp:
           type: object
           properties:
             email_from:
               type: string
               format: email
+              default: user@example.org
+              example: user@example.org
             hello_name:
               type: string
+              default: localhost
+              example: localhost
             proxy:
               type: string
               format: uri
@@ -194,14 +199,18 @@ components:
               type: number
               description: timeout creating smtp connection
               default: &TimeoutDefault 5.0
+              example: *TimeoutDefault
             timeout_response:
               type: number
               description: timeout of communication with smtp server
               default: *TimeoutDefault
+              example: *TimeoutDefault
             port:
               type: integer
               description: smtp port remote server
               format: int32
+              default: 25
+              example: 25
 #        gravatar:
 #          type: object
 #          properties:
