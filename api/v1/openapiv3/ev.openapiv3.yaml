@@ -6,8 +6,11 @@ info:
     All timeouts are set in seconds with nanosecond precision. For example, 1.505402 is 1 second, 505 milliseconds and 402 microseconds.
 servers:
   - url: /
+  - url: https://email-validator15.p.rapidapi.com/
 security:
-  - BearerAuth: [ ]
+  - AuthKey: [ ]
+  - RapidApiSecret: [ ]
+  - RapidApiKey: [ ]
 components:
   schemas:
     ResultType:
@@ -211,13 +214,13 @@ components:
               format: int32
               default: 25
               example: 25
-#        gravatar:
-#          type: object
-#          properties:
-#            timeout:
-#              type: number
-#              description: timeout request to gravatar.com
-#              default: *TimeoutDefault
+        #        gravatar:
+        #          type: object
+        #          properties:
+        #            timeout:
+        #              type: number
+        #              description: timeout request to gravatar.com
+        #              default: *TimeoutDefault
         result_type:
           $ref: '#/components/schemas/ResultType'
     EmailResponse:
@@ -226,15 +229,18 @@ components:
         - $ref: '#/components/schemas/MailboxvalidatorResult'
         - $ref: '#/components/schemas/PromptEmailVerificationApiResult'
   securitySchemes:
-    BearerAuth:
+    AuthKey:
       type: apiKey
-      name: Authorization
       in: header
-      x-amazon-apigateway-authtype: custom
-      x-amazon-apigateway-authorizer:
-        type: token
-        authorizerCredentials: ${authorizerCredentials}
-        authorizerUri: ${authorizerUri}
+      name: Authorization
+    RapidApiSecret:
+      type: apiKey
+      in: header
+      name: X-RapidAPI-Proxy-Secret
+    RapidApiKey:
+      type: apiKey
+      in: header
+      name: X-RapidAPI-Key
 paths:
   /v1/validation/single:
     post:
