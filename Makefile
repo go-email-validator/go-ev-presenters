@@ -148,5 +148,11 @@ openapitools.gen:
 	Dockerfile \
 	README.md
 
+openapitools.gen.sdk.php:
+	docker run --user "$(DOCKER_USER_RUN)" --rm -v "$(pwd):/local" openapitools/openapi-generator-cli generate \
+	-g php \
+	-o /local/php \
+	-i /local/api/v1/openapiv3/ev.openapiv3.yaml
+
 assets:
 	statik -src=. -include=*.yaml

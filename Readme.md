@@ -1,24 +1,24 @@
 # Test
 
 ```bash
-docker run -p 8080:8080 maranqz/go-email-validator
+docker run -p 8090:8090 maranqz/go-email-validator
 
-docker run -p 8080:8080 maranqz/go-email-validator --smtp-proxy=socks5://username:password@host:port
+docker run -p 8090:8090 maranqz/go-email-validator --smtp-proxy=socks5://username:password@host:port
 ```
 
-Where 8080 is REST.
+Where 8090 is REST.
 To change ports use options:
-    --http-bind=0.0.0.0:8080
+    --http-bind=0.0.0.0:8090
 
 ```bash
-curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:8080/v1/validation/single
+curl -X POST -d'{"email": "go.email.validator@gmail.com", "result_type": 0}' http://localhost:8090/v1/validation/single
 ```
 
 To run tor socks for testing
 docker run -it -p 8118:8118 -p 9050:9050 dperson/torproxy
 
 swagger-ui
-http://localhost:8080/swagger-ui/
+http://localhost:8090/swagger-ui/
 
 Where result_type is enum for choosing of viewing:
 * 0 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)

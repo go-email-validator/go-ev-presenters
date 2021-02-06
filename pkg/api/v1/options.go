@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	HTTPDefaultHost = "0.0.0.0:8080"
+	HTTPDefaultHost = "0.0.0.0:8090"
 	SwaggerPath     = "/api/v1/openapiv3/ev.openapiv3.yaml"
 
 	EnvPrefix              = "EV_"

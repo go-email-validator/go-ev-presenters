@@ -19,13 +19,13 @@ type miscPresenter struct {
 
 // https://github.com/amaurymartiny/check-if-email-exists or https://reacher.email
 type DepPresenter struct {
-	Input       string               `json:"input"`
-	IsReachable Availability         `json:"is_reachable"`
-	Misc        miscPresenter        `json:"misc"`
-	MX          mxPresenter          `json:"mx"`
-	SMTP        common.SmtpPresenter `json:"smtp"`
-	Syntax      syntaxPresenter      `json:"syntax"`
-	Error       string               `json:"error"`
+	Input       string          `json:"input"`
+	IsReachable Availability    `json:"is_reachable"`
+	Misc        miscPresenter   `json:"misc"`
+	MX          mxPresenter     `json:"mx"`
+	SMTP        SmtpPresenter   `json:"smtp"`
+	Syntax      syntaxPresenter `json:"syntax"`
+	Error       string          `json:"error"`
 }
 
 type FuncAvailability func(depPresenter DepPresenter) Availability
@@ -75,7 +75,13 @@ func (s DepPreparer) Prepare(email evmail.Address, result ev.ValidationResult, o
 		case mxPresenter:
 			depPresenter.MX = v
 		case common.SmtpPresenter:
-			depPresenter.SMTP = v
+			depPresenter.SMTP = SmtpPresenter{
+				CanConnectSmtp: v.CanConnectSmtp,
+				HasFullInbox:   v.HasFullInbox,
+				IsCatchAll:     v.IsCatchAll,
+				IsDeliverable:  v.IsDeliverable,
+				IsDisabled:     v.IsDisabled,
+			}
 		case syntaxPresenter:
 			depPresenter.Syntax = v
 		}
