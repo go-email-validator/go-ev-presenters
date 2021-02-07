@@ -38,7 +38,12 @@ func (v *unmarshalString) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func TestEmailResponses(t *testing.T, filepath, path string) []*openapi.OneOfEmailResponse {
+func TestEmailResponses(
+	t *testing.T,
+	filepath,
+	path string,
+	factory func(data []byte) *openapi.EmailResponse,
+) []*openapi.EmailResponse {
 	if filepath == "" {
 		filepath = DefaultDepFixtureFile
 	}
@@ -59,12 +64,9 @@ func TestEmailResponses(t *testing.T, filepath, path string) []*openapi.OneOfEma
 	err = json.Unmarshal([]byte(value.String()), &jsonResponses)
 	require.Nil(t, err, filepath)
 
-	responses := make([]*openapi.OneOfEmailResponse, len(jsonResponses))
+	responses := make([]*openapi.EmailResponse, len(jsonResponses))
 	for index, jsonResponse := range jsonResponses {
-		var message = new(openapi.OneOfEmailResponse)
-		err = json.Unmarshal(jsonResponse, &message)
-		require.Nil(t, err, filepath, string(jsonResponse))
-		responses[index] = message
+		responses[index] = factory(jsonResponse)
 	}
 
 	return responses

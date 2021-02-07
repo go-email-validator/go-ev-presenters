@@ -10,8 +10,15 @@ import (
 	"strings"
 )
 
+type ValidatorFactory interface {
+	Validator(c *fiber.Ctx) Validator
+}
+
+type ValidatorFactoryFunc func(router *openapi3filter.Router, options *openapi3filter.Options, input *openapi3filter.RequestValidationInput) Validator
+
 type Validator interface {
-	Validate(c *fiber.Ctx) error
+	ValidateRequest(c *fiber.Ctx) error
+	ValidateResponse(c *fiber.Ctx) error
 }
 
 func RouterFromPath(path string) *openapi3filter.Router {
@@ -28,19 +35,25 @@ func RouterFromPath(path string) *openapi3filter.Router {
 	return openapi3filter.NewRouter().WithSwagger(swagger)
 }
 
-func NewValidator(router *openapi3filter.Router, options *openapi3filter.Options) Validator {
-	return &validator{
-		router:  router,
-		options: options,
+func NewValidatorFactory(router *openapi3filter.Router, options *openapi3filter.Options, validatorFactoryFunc ValidatorFactoryFunc) ValidatorFactory {
+	if validatorFactoryFunc == nil {
+		validatorFactoryFunc = NewValidator
+	}
+
+	return &validatorFactory{
+		router:               router,
+		options:              options,
+		validatorFactoryFunc: validatorFactoryFunc,
 	}
 }
 
-type validator struct {
-	router  *openapi3filter.Router
-	options *openapi3filter.Options
+type validatorFactory struct {
+	router               *openapi3filter.Router
+	options              *openapi3filter.Options
+	validatorFactoryFunc ValidatorFactoryFunc
 }
 
-func (v *validator) Validate(c *fiber.Ctx) error {
+func (v *validatorFactory) Validator(c *fiber.Ctx) Validator {
 	httpReq, _ := http.NewRequest(c.Method(), c.Path(), bytes.NewReader(c.Body()))
 	httpReq.RemoteAddr = c.Context().RemoteIP().String()
 
@@ -65,5 +78,40 @@ func (v *validator) Validate(c *fiber.Ctx) error {
 		Options:    v.options,
 	}
 
-	return openapi3filter.ValidateRequest(c.Context(), requestValidationInput)
+	return v.validatorFactoryFunc(v.router, v.options, requestValidationInput)
+}
+
+func NewValidator(router *openapi3filter.Router, options *openapi3filter.Options, input *openapi3filter.RequestValidationInput) Validator {
+	return &validator{
+		router:  router,
+		options: options,
+		input:   input,
+	}
+}
+
+type validator struct {
+	router  *openapi3filter.Router
+	options *openapi3filter.Options
+	input   *openapi3filter.RequestValidationInput
+}
+
+func (v *validator) ValidateRequest(c *fiber.Ctx) error {
+	return openapi3filter.ValidateRequest(c.Context(), v.input)
+}
+
+func (v *validator) ValidateResponse(c *fiber.Ctx) error {
+	responseValidationInput := &openapi3filter.ResponseValidationInput{
+		RequestValidationInput: v.input,
+		Status:                 c.Context().Response.StatusCode(),
+		Header: http.Header{
+			"Content-Type": []string{
+				string(c.Context().Response.Header.ContentType()),
+			},
+		},
+	}
+	if body := c.Context().Response.Body(); body != nil {
+		responseValidationInput.SetBodyBytes(body)
+	}
+
+	return openapi3filter.ValidateResponse(c.Context(), responseValidationInput)
 }

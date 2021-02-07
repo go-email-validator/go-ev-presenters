@@ -53,6 +53,7 @@ components:
       type: object
       properties:
         address:
+          nullable: true
           type: string
         domain:
           type: string
@@ -224,10 +225,14 @@ components:
         result_type:
           $ref: '#/components/schemas/ResultType'
     EmailResponse:
-      oneOf:
-        - $ref: '#/components/schemas/CheckIfEmailExistResult'
-        - $ref: '#/components/schemas/MailboxvalidatorResult'
-        - $ref: '#/components/schemas/PromptEmailVerificationApiResult'
+      type: object
+      properties:
+        check_if_email_exist:
+          $ref: '#/components/schemas/CheckIfEmailExistResult'
+        mailboxvalidator:
+          $ref: '#/components/schemas/MailboxvalidatorResult'
+        prompt_email_verification_api:
+          $ref: '#/components/schemas/PromptEmailVerificationApiResult'
   securitySchemes:
     AuthKey:
       type: apiKey

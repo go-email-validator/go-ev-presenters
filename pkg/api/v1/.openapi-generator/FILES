@@ -2,6 +2,7 @@ Dockerfile
 README.md
 api/openapi.yaml
 go.mod
+go/api_email_validation.go
 go/api_email_validation_service.go
 go/helpers.go
 go/impl.go
@@ -12,7 +13,6 @@ go/model_check_if_email_exist_result.go
 go/model_check_if_email_exist_smtp.go
 go/model_check_if_email_exist_syntax.go
 go/model_email_request.go
-go/model_email_request_gravatar.go
 go/model_email_request_smtp.go
 go/model_email_response.go
 go/model_mailboxvalidator_result.go

@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 )
@@ -36,7 +37,7 @@ type singleValidationTestArgs struct {
 
 type singleValidationTest struct {
 	args    singleValidationTestArgs
-	want    *openapi.OneOfEmailResponse
+	want    *openapi.EmailResponse
 	wantErr error
 }
 
@@ -50,7 +51,15 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		presenter_test.TestDepPresenters(t, &fixtures, fixturePath)
 		require.Greater(t, len(fixtures), 0)
 
-		presenters := presenter_test.TestEmailResponses(t, fixturePath, "")
+		presenters := presenter_test.TestEmailResponses(t, fixturePath, "", func(data []byte) *openapi.EmailResponse {
+			result := openapi.CheckIfEmailExistResult{}
+			err := json.Unmarshal(data, &result)
+			require.Nil(t, err, fixturePath, string(data))
+
+			return &openapi.EmailResponse{
+				CheckIfEmailExist: result,
+			}
+		})
 		presenterResult := make(map[string]interface{}, len(fixtures))
 
 		for index, dep := range fixtures {
@@ -71,7 +80,15 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		presenter_test.TestDepPresenters(t, &fixtures, fixturePath)
 		require.Greater(t, len(fixtures), 0)
 
-		presenters := presenter_test.TestEmailResponses(t, fixturePath, "")
+		presenters := presenter_test.TestEmailResponses(t, fixturePath, "", func(data []byte) *openapi.EmailResponse {
+			result := openapi.MailboxvalidatorResult{}
+			err := json.Unmarshal(data, &result)
+			require.Nil(t, err, fixturePath, string(data))
+
+			return &openapi.EmailResponse{
+				Mailboxvalidator: result,
+			}
+		})
 		presenterResult := make(map[string]interface{}, len(fixtures))
 
 		for index, dep := range fixtures {
@@ -93,7 +110,15 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		presenter_test.TestDepPresenters(t, &fixtures, fixturePath)
 		require.Greater(t, len(fixtures), 0)
 
-		presenters := presenter_test.TestEmailResponses(t, fixturePath, "#.Dep")
+		presenters := presenter_test.TestEmailResponses(t, fixturePath, "#.Dep", func(data []byte) *openapi.EmailResponse {
+			result := openapi.PromptEmailVerificationApiResult{}
+			err := json.Unmarshal(data, &result)
+			require.Nil(t, err, fixturePath, string(data))
+
+			return &openapi.EmailResponse{
+				PromptEmailVerificationApi: result,
+			}
+		})
 		presenterResult := make(map[string]interface{}, len(fixtures))
 
 		for index, dep := range fixtures {
@@ -126,6 +151,7 @@ func startServer(InOpts *Options) (*Server, Options) {
 	}
 
 	opts.Fiber.IdleTimeout = 500 * time.Millisecond
+	opts.HTTP.OpenApiResponseValidation = true
 
 	server := NewServer(DefaultFiberFactory, opts)
 	err := server.Start()
@@ -169,7 +195,9 @@ func TestServer_HTTP(t *testing.T) {
 
 				body, err := ioutil.ReadAll(resp.Body)
 				require.Nil(t, err)
-				got := &openapi.OneOfEmailResponse{}
+				require.False(t, strings.Contains(string(body), "{\"message\":\""), "Invalid answer \n"+string(body))
+
+				got := &openapi.EmailResponse{}
 				err = json.Unmarshal(body, got)
 				require.Nil(t, err)
 
@@ -227,7 +255,7 @@ func TestServer_HTTP_FUNC(t *testing.T) {
 				url := "http://" + opts.HTTP.Bind + "/v1/validation/single/" + tt.args.email + "?result_type=" + string(tt.args.resultType)
 
 				client := http.Client{
-					Timeout: 10 * time.Second,
+					Timeout: 15 * time.Second,
 				}
 				resp, err := client.Get(url)
 				require.Equal(t, tt.wantErr, err)
@@ -235,21 +263,22 @@ func TestServer_HTTP_FUNC(t *testing.T) {
 
 				body, err := ioutil.ReadAll(resp.Body)
 				require.Nil(t, err)
-				got := &openapi.OneOfEmailResponse{}
+				require.False(t, strings.Contains(string(body), "{\"message\":\""))
+				got := &openapi.EmailResponse{}
 				err = json.Unmarshal(body, got)
 				require.Nil(t, err)
 
-				sort.Strings(got.MxRecords.Records)
-				sort.Strings(got.Mx.Records)
-				got.TimeTaken = "0"
+				sort.Strings(got.CheckIfEmailExist.Mx.Records)
+				sort.Strings(got.PromptEmailVerificationApi.MxRecords.Records)
+				got.Mailboxvalidator.TimeTaken = "0"
 
-				sort.Strings(tt.want.MxRecords.Records)
-				sort.Strings(tt.want.Mx.Records)
-				tt.want.TimeTaken = "0"
+				sort.Strings(tt.want.CheckIfEmailExist.Mx.Records)
+				sort.Strings(tt.want.PromptEmailVerificationApi.MxRecords.Records)
+				tt.want.Mailboxvalidator.TimeTaken = "0"
 
 				// TODO create more complex approach to skip some problem on outside service
 				if name == "tvzamhkdc@emlhub.com_PROMPT_EMAIL_VERIFICATION_API" {
-					got.PromptEmailVerificationApiResult.CanConnectSmtp = false
+					got.PromptEmailVerificationApi.CanConnectSmtp = false
 				}
 
 				if !reflect.DeepEqual(tt.want, got) {

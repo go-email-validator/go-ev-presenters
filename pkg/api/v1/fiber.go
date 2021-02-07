@@ -16,7 +16,7 @@ func DefaultFiberFactory(service openapi.EmailValidationApiRouter, opts Options)
 		chainErr := c.Next()
 
 		if chainErr != nil {
-			return Error(c, chainErr)
+			return ResponseError(c, chainErr)
 		}
 
 		return chainErr

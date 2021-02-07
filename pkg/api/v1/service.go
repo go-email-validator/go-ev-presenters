@@ -2,11 +2,12 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/utils"
-	openapi "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
+	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
 	"github.com/gofiber/fiber/v2"
@@ -14,14 +15,14 @@ import (
 	"net/url"
 )
 
-func Error(c *fiber.Ctx, err error) error {
+func ResponseError(c *fiber.Ctx, err error) error {
 	return c.JSON(openapi.UnexpectedError{Message: err.Error()})
 }
 
 func DefaultUnmarshal(c *fiber.Ctx, data []byte, v interface{}) error {
 	if err := json.Unmarshal(data, v); err != nil {
 		c.Status(http.StatusBadRequest)
-		return Error(c, err)
+		return ResponseError(c, err)
 	}
 	return nil
 }
@@ -29,10 +30,11 @@ func DefaultUnmarshal(c *fiber.Ctx, data []byte, v interface{}) error {
 type unmarshal func(c *fiber.Ctx, data []byte, v interface{}) error
 
 type EmailValidationApiControllerDTO struct {
-	Presenter        presenter.MultiplePresenter
-	Matching         map[openapi.ResultType]preparer.Name
-	OpenApiValidator openapi.Validator
-	JsonUnmarshal    unmarshal
+	Presenter     presenter.MultiplePresenter
+	Matching      map[openapi.ResultType]preparer.Name
+	JsonUnmarshal unmarshal
+	// MatchingResponse needs to juxtapose with openapi.EmailResponse
+	MatchingResponse map[preparer.Name]string
 }
 
 func NewEmailValidationApiController(dto EmailValidationApiControllerDTO) openapi.EmailValidationApiRouter {
@@ -43,8 +45,8 @@ func NewEmailValidationApiController(dto EmailValidationApiControllerDTO) openap
 	return &emailValidationApiController{
 		presenter:        dto.Presenter,
 		matching:         dto.Matching,
-		openApiValidator: dto.OpenApiValidator,
 		unmarshal:        dto.JsonUnmarshal,
+		matchingResponse: dto.MatchingResponse,
 	}
 }
 
@@ -52,18 +54,24 @@ func NewEmailValidationApiController(dto EmailValidationApiControllerDTO) openap
 type emailValidationApiController struct {
 	presenter        presenter.MultiplePresenter
 	matching         map[openapi.ResultType]preparer.Name
-	openApiValidator openapi.Validator
+	matchingResponse map[preparer.Name]string
 	unmarshal        unmarshal
 }
 
 var smtpDefaultOpts = evsmtp.DefaultOptions()
 var gravatarDefaultOpts = ev.DefaultGravatarOptions()
 
-func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fiber.Ctx) error {
-	if err := e.openApiValidator.Validate(c); err != nil {
-		return Error(c, err)
+func (e *emailValidationApiController) preparePresenter(name preparer.Name, presenter interface{}) interface{} {
+	if key, ok := e.matchingResponse[name]; ok {
+		return map[string]interface{}{
+			key: presenter,
+		}
 	}
 
+	panic(fmt.Sprintf("Value does not exist for key \"%s\"", name))
+}
+
+func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fiber.Ctx) error {
 	body := &openapi.EmailRequest{}
 	if err := e.unmarshal(c, c.Request().Body(), &body); err != nil {
 		return nil
@@ -100,39 +108,36 @@ func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fi
 				smtpDefaultOpts.Port(),
 			),
 		}),
-		ev.GravatarValidatorName: ev.NewGravatarOptions(ev.GravatarOptionsDTO{
+		/*ev.GravatarValidatorName: ev.NewGravatarOptions(ev.GravatarOptionsDTO{
 			Timeout: utils.DefaultDuration(
 				OnlyPositiveDuration(SecondDuration(float64(body.Gravatar.Timeout))),
 				gravatarDefaultOpts.Timeout(),
 			),
-		}),
+		}),*/
 	}
 
-	result, err := e.presenter.SingleValidation(body.Email, e.matching[body.ResultType], opts)
+	preparerName := e.matching[body.ResultType]
+	result, err := e.presenter.SingleValidation(body.Email, preparerName, opts)
 	if err != nil {
-		return Error(c, err)
+		return ResponseError(c, err)
 	}
-
-	return c.JSON(result)
+	return c.JSON(e.preparePresenter(preparerName, result))
 }
 
 var defaultResultType = string(openapi.CIEE)
 
 func (e *emailValidationApiController) EmailValidationSingleValidationGet(c *fiber.Ctx) error {
-	if err := e.openApiValidator.Validate(c); err != nil {
-		return Error(c, err)
-	}
-
 	email, err := url.QueryUnescape(c.Params("email"))
 	if err != nil {
-		return Error(c, err)
+		return ResponseError(c, err)
 	}
 	resultType := openapi.ResultType(c.Query("result_type", defaultResultType))
 
-	result, err := e.presenter.SingleValidation(email, e.matching[resultType], nil)
+	preparerName := e.matching[resultType]
+	result, err := e.presenter.SingleValidation(email, preparerName, nil)
 	if err != nil {
-		return Error(c, err)
+		return ResponseError(c, err)
 	}
 
-	return c.JSON(result)
+	return c.JSON(e.preparePresenter(preparerName, result))
 }

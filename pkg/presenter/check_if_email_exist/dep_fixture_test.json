@@ -285,7 +285,7 @@
   },
   {
     "input": "theofanis.giot2is@12pm.gr",
-    "is_reachable": "risky",
+    "is_reachable": "invalid",
     "misc": {
       "is_disposable": false,
       "is_role_account": false
@@ -299,10 +299,10 @@
       ]
     },
     "smtp": {
-      "can_connect_smtp": true,
+      "can_connect_smtp": false,
       "has_full_inbox": false,
-      "is_catch_all": true,
-      "is_deliverable": true,
+      "is_catch_all": false,
+      "is_deliverable": false,
       "is_disabled": false
     },
     "syntax": {
@@ -315,7 +315,7 @@
   },
   {
     "input": "theofanisgiotis@12pm.gr",
-    "is_reachable": "risky",
+    "is_reachable": "invalid",
     "misc": {
       "is_disposable": false,
       "is_role_account": false
@@ -329,10 +329,10 @@
       ]
     },
     "smtp": {
-      "can_connect_smtp": true,
+      "can_connect_smtp": false,
       "has_full_inbox": false,
-      "is_catch_all": true,
-      "is_deliverable": true,
+      "is_catch_all": false,
+      "is_deliverable": false,
       "is_disabled": false
     },
     "syntax": {

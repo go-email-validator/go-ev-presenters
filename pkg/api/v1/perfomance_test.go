@@ -99,19 +99,21 @@ func BenchmarkServer(b *testing.B) {
 	b.Run("Parallel", func(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				resp, err := client.Get(reqURL)
-				require.Nil(b, err)
-				if err != nil {
-					a := 1
-					_ = a
-				}
-				defer resp.Body.Close()
+				func() {
+					resp, err := client.Get(reqURL)
+					require.Nil(b, err)
+					if err != nil {
+						a := 1
+						_ = a
+					}
+					defer resp.Body.Close()
 
-				body, err := ioutil.ReadAll(resp.Body)
-				require.Nil(b, err)
-				got := &openapi.OneOfEmailResponse{}
-				err = json.Unmarshal(body, got)
-				require.Nil(b, err)
+					body, err := ioutil.ReadAll(resp.Body)
+					require.Nil(b, err)
+					got := &openapi.EmailResponse{}
+					err = json.Unmarshal(body, got)
+					require.Nil(b, err)
+				}()
 			}
 		})
 	})

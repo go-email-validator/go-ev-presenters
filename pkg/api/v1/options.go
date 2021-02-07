@@ -43,7 +43,7 @@ func DefaultInstance(opts Options) openapi.EmailValidationApiRouter {
 
 	defaultCheckerOptions := evsmtp.DefaultOptions()
 
-	return NewEmailValidationApiController(EmailValidationApiControllerDTO{
+	return NeApiOAValidatorDecorator(NewEmailValidationApiController(EmailValidationApiControllerDTO{
 		Presenter: getPresenter(evsmtp.CheckerDTO{
 			SendMailFactory: evsmtp.NewSendMailFactory(evsmtp.H12IODial, nil),
 			Options: evsmtp.NewOptions(evsmtp.OptionsDTO{
@@ -64,13 +64,18 @@ func DefaultInstance(opts Options) openapi.EmailValidationApiRouter {
 			openapi.PEVA:                          prompt_email_verification_api.Name,
 			openapi.PROMPT_EMAIL_VERIFICATION_API: prompt_email_verification_api.Name,
 		},
-		OpenApiValidator: openapi.NewValidator(
-			openapi.RouterFromPath(opts.HTTP.OpenApiPath),
-			&openapi3filter.Options{
-				AuthenticationFunc: authenticationFunc,
-			},
-		),
-	})
+		MatchingResponse: map[preparer.Name]string{
+			check_if_email_exist.Name:          "check_if_email_exist",
+			mailboxvalidator.Name:              "mailboxvalidator",
+			prompt_email_verification_api.Name: "prompt_email_verification_api",
+		},
+	}), openapi.NewValidatorFactory(
+		openapi.RouterFromPath(opts.HTTP.OpenApiPath),
+		&openapi3filter.Options{
+			AuthenticationFunc: authenticationFunc,
+		},
+		openapi.NewValidator,
+	), opts.HTTP.OpenApiResponseValidation)
 }
 
 var getPresenter = NewMultiplePresentersDefault
@@ -162,9 +167,10 @@ func NewHTTPOptions() HTTPOptions {
 }
 
 type HTTPOptions struct {
-	Bind        string
-	ShowOpenApi bool
-	OpenApiPath string
+	Bind                      string
+	ShowOpenApi               bool
+	OpenApiPath               string
+	OpenApiResponseValidation bool
 }
 
 func NewAuthOptions() AuthOptions {
