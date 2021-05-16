@@ -9,9 +9,9 @@ import (
 	mockev "github.com/go-email-validator/go-email-validator/test/mock/ev"
 	mockevmail "github.com/go-email-validator/go-email-validator/test/mock/ev/evmail"
 	openapi "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/check_if_email_exist"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/converter"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ Options) presenter.MultiplePresenter {
+func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ Options) presentation.MultiplePresenter {
 	ctrl := gomock.NewController(b)
 	defer ctrl.Finish()
 
@@ -67,8 +67,8 @@ func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ 
 		smtpValidator,
 	).Build()
 
-	return presenter.NewMultiplePresenter(map[preparer.Name]presenter.Interface{
-		check_if_email_exist.Name: presenter.NewPresenter(
+	return presentation.NewMultiplePresenter(map[converter.Name]presentation.Interface{
+		check_if_email_exist.Name: presentation.NewPresenter(
 			evmail.FromString,
 			validator,
 			check_if_email_exist.NewDepPreparerDefault(),
@@ -79,7 +79,7 @@ func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ 
 func BenchmarkServer(b *testing.B) {
 	runtime.GOMAXPROCS(1) // Use only wan processor
 
-	getPresenter = func(checkerDTO evsmtp.CheckerDTO, opts Options) presenter.MultiplePresenter {
+	getPresenter = func(checkerDTO evsmtp.CheckerDTO, opts Options) presentation.MultiplePresenter {
 		return newMultiplePresentersDefault(b, checkerDTO, opts)
 	}
 

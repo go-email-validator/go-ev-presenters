@@ -6,14 +6,14 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evtests"
 	openapi "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator/addition"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/presenter_test"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api/cmd/dep_test_generator/struct"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/check_if_email_exist"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/converter"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/mailboxvalidator"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/mailboxvalidator/addition"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/presentation_test"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/prompt_email_verification_api"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/prompt_email_verification_api/cmd/dep_test_generator/struct"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +24,7 @@ import (
 	"time"
 )
 
-var valuePresenters = map[preparer.Name]presenter.Interface{
+var valuePresenters = map[converter.Name]presentation.Interface{
 	check_if_email_exist.Name:          nil,
 	mailboxvalidator.Name:              nil,
 	prompt_email_verification_api.Name: nil,
@@ -43,15 +43,15 @@ type singleValidationTest struct {
 
 func depPresenters(t *testing.T) (tests []singleValidationTest) {
 	tests = make([]singleValidationTest, 0)
-	rootPath := "../../presenter/"
+	rootPath := "../../presentation/"
 
 	{
-		fixturePath := rootPath + "/check_if_email_exist/" + presenter_test.DefaultDepFixtureFile
-		fixtures := make([]check_if_email_exist.DepPresenter, 0)
-		presenter_test.TestDepPresenters(t, &fixtures, fixturePath)
+		fixturePath := rootPath + "/check_if_email_exist/" + presentation_test.DefaultDepFixtureFile
+		fixtures := make([]check_if_email_exist.DepPresentation, 0)
+		presentation_test.TestDepPresentations(t, &fixtures, fixturePath)
 		require.Greater(t, len(fixtures), 0)
 
-		presenters := presenter_test.TestEmailResponses(t, fixturePath, "", func(data []byte) *openapi.EmailResponse {
+		presenters := presentation_test.TestEmailResponses(t, fixturePath, "", func(data []byte) *openapi.EmailResponse {
 			result := openapi.CheckIfEmailExistResult{}
 			err := json.Unmarshal(data, &result)
 			require.Nil(t, err, fixturePath, string(data))
@@ -76,11 +76,11 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 	}
 	{
 		fixturePath := rootPath + "/mailboxvalidator/" + addition.DepFixtureForViewFile
-		fixtures := make([]mailboxvalidator.DepPresenterForView, 0)
-		presenter_test.TestDepPresenters(t, &fixtures, fixturePath)
+		fixtures := make([]mailboxvalidator.DepPresentationForView, 0)
+		presentation_test.TestDepPresentations(t, &fixtures, fixturePath)
 		require.Greater(t, len(fixtures), 0)
 
-		presenters := presenter_test.TestEmailResponses(t, fixturePath, "", func(data []byte) *openapi.EmailResponse {
+		presenters := presentation_test.TestEmailResponses(t, fixturePath, "", func(data []byte) *openapi.EmailResponse {
 			result := openapi.MailboxvalidatorResult{}
 			err := json.Unmarshal(data, &result)
 			require.Nil(t, err, fixturePath, string(data))
@@ -105,12 +105,12 @@ func depPresenters(t *testing.T) (tests []singleValidationTest) {
 		valuePresenters[mailboxvalidator.Name] = &mockPresenter{presenterResult}
 	}
 	{
-		fixturePath := rootPath + "/prompt_email_verification_api/" + presenter_test.DefaultDepFixtureFile
-		fixtures := make([]_struct.DepPresenterTest, 0)
-		presenter_test.TestDepPresenters(t, &fixtures, fixturePath)
+		fixturePath := rootPath + "/prompt_email_verification_api/" + presentation_test.DefaultDepFixtureFile
+		fixtures := make([]_struct.DepPresentationTest, 0)
+		presentation_test.TestDepPresentations(t, &fixtures, fixturePath)
 		require.Greater(t, len(fixtures), 0)
 
-		presenters := presenter_test.TestEmailResponses(t, fixturePath, "#.Dep", func(data []byte) *openapi.EmailResponse {
+		presenters := presentation_test.TestEmailResponses(t, fixturePath, "#.Dep", func(data []byte) *openapi.EmailResponse {
 			result := openapi.PromptEmailVerificationApiResult{}
 			err := json.Unmarshal(data, &result)
 			require.Nil(t, err, fixturePath, string(data))
@@ -171,8 +171,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestServer_HTTP(t *testing.T) {
-	getPresenter = func(_ evsmtp.CheckerDTO, _ Options) presenter.MultiplePresenter {
-		return presenter.NewMultiplePresenter(valuePresenters)
+	getPresenter = func(_ evsmtp.CheckerDTO, _ Options) presentation.MultiplePresenter {
+		return presentation.NewMultiplePresenter(valuePresenters)
 	}
 	server, opts := startServer(nil)
 	defer reset()
@@ -215,7 +215,7 @@ func TestServer_HTTP_FUNC(t *testing.T) {
 	server, opts := startServer(nil)
 	defer shutdownServer(server)
 
-	// Some data or functional cannot be matched, see more nearby DepPresenter of emails
+	// Some data or functional cannot be matched, see more nearby DepPresentation of emails
 	skipEmail := hashset.New(
 		// TODO problem with SMTP, CIEE think that email is not is_catch_all. Need to run and research source code on RUST
 		"sewag33689@itymail.com",

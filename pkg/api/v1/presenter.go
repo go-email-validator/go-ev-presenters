@@ -7,15 +7,15 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/check_if_email_exist"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/converter"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/mailboxvalidator"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/prompt_email_verification_api"
 	"time"
 )
 
-func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) presenter.MultiplePresenter {
+func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) presentation.MultiplePresenter {
 	var cache CacheInterface
 
 	withMemcached := len(opts.Validator.Memcached) > 0
@@ -68,18 +68,18 @@ func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) pr
 		smtpValidator = cache.Validator(smtpValidator)
 	}
 
-	return presenter.NewMultiplePresenter(map[preparer.Name]presenter.Interface{
-		check_if_email_exist.Name: presenter.NewPresenter(
+	return presentation.NewMultiplePresenter(map[converter.Name]presentation.Interface{
+		check_if_email_exist.Name: presentation.NewPresenter(
 			evmail.FromString,
 			check_if_email_exist.NewDepValidator(smtpValidator),
 			check_if_email_exist.NewDepPreparerDefault(),
 		),
-		mailboxvalidator.Name: presenter.NewPresenter(
+		mailboxvalidator.Name: presentation.NewPresenter(
 			mailboxvalidator.EmailFromString,
 			mailboxvalidator.NewDepValidator(smtpValidator),
 			mailboxvalidator.NewDepPreparerForViewDefault(),
 		),
-		prompt_email_verification_api.Name: presenter.NewPresenter(
+		prompt_email_verification_api.Name: presentation.NewPresenter(
 			prompt_email_verification_api.EmailFromString,
 			prompt_email_verification_api.NewDepValidator(smtpValidator),
 			prompt_email_verification_api.NewDepPreparerDefault(),

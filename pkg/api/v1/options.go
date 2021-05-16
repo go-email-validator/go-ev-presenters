@@ -7,10 +7,10 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/utils"
 	openapi "github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/check_if_email_exist"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/mailboxvalidator"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/prompt_email_verification_api"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/check_if_email_exist"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/converter"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/mailboxvalidator"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/prompt_email_verification_api"
 	"github.com/gofiber/fiber/v2"
 	"os"
 	"strconv"
@@ -55,7 +55,7 @@ func DefaultInstance(opts Options) openapi.EmailValidationApiRouter {
 				Port:        defaultCheckerOptions.Port(),
 			}),
 		}, opts),
-		Matching: map[openapi.ResultType]preparer.Name{
+		Matching: map[openapi.ResultType]converter.Name{
 			openapi.CIEE:                          check_if_email_exist.Name,
 			openapi.CHECK_IF_EMAIL_EXIST:          check_if_email_exist.Name,
 			openapi.MBV:                           mailboxvalidator.Name,
@@ -64,7 +64,7 @@ func DefaultInstance(opts Options) openapi.EmailValidationApiRouter {
 			openapi.PEVA:                          prompt_email_verification_api.Name,
 			openapi.PROMPT_EMAIL_VERIFICATION_API: prompt_email_verification_api.Name,
 		},
-		MatchingResponse: map[preparer.Name]string{
+		MatchingResponse: map[converter.Name]string{
 			check_if_email_exist.Name:          "check_if_email_exist",
 			mailboxvalidator.Name:              "mailboxvalidator",
 			prompt_email_verification_api.Name: "prompt_email_verification_api",

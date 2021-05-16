@@ -8,8 +8,8 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/utils"
 	"github.com/go-email-validator/go-ev-presenters/pkg/api/v1/go"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter"
-	"github.com/go-email-validator/go-ev-presenters/pkg/presenter/preparer"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/converter"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"net/url"
@@ -30,11 +30,11 @@ func DefaultUnmarshal(c *fiber.Ctx, data []byte, v interface{}) error {
 type unmarshal func(c *fiber.Ctx, data []byte, v interface{}) error
 
 type EmailValidationApiControllerDTO struct {
-	Presenter     presenter.MultiplePresenter
-	Matching      map[openapi.ResultType]preparer.Name
+	Presenter     presentation.MultiplePresenter
+	Matching      map[openapi.ResultType]converter.Name
 	JsonUnmarshal unmarshal
 	// MatchingResponse needs to juxtapose with openapi.EmailResponse
-	MatchingResponse map[preparer.Name]string
+	MatchingResponse map[converter.Name]string
 }
 
 func NewEmailValidationApiController(dto EmailValidationApiControllerDTO) openapi.EmailValidationApiRouter {
@@ -52,16 +52,16 @@ func NewEmailValidationApiController(dto EmailValidationApiControllerDTO) openap
 
 // A emailValidationApiController binds http requests to an api service and writes the service results to the http response
 type emailValidationApiController struct {
-	presenter        presenter.MultiplePresenter
-	matching         map[openapi.ResultType]preparer.Name
-	matchingResponse map[preparer.Name]string
+	presenter        presentation.MultiplePresenter
+	matching         map[openapi.ResultType]converter.Name
+	matchingResponse map[converter.Name]string
 	unmarshal        unmarshal
 }
 
 var smtpDefaultOpts = evsmtp.DefaultOptions()
 var gravatarDefaultOpts = ev.DefaultGravatarOptions()
 
-func (e *emailValidationApiController) preparePresenter(name preparer.Name, presenter interface{}) interface{} {
+func (e *emailValidationApiController) preparePresenter(name converter.Name, presenter interface{}) interface{} {
 	if key, ok := e.matchingResponse[name]; ok {
 		return map[string]interface{}{
 			key: presenter,
@@ -117,7 +117,7 @@ func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fi
 	}
 
 	preparerName := e.matching[body.ResultType]
-	result, err := e.presenter.SingleValidation(body.Email, preparerName, opts)
+	result, err := e.presenter.Validate(body.Email, preparerName, opts)
 	if err != nil {
 		return ResponseError(c, err)
 	}
@@ -134,7 +134,7 @@ func (e *emailValidationApiController) EmailValidationSingleValidationGet(c *fib
 	resultType := openapi.ResultType(c.Query("result_type", defaultResultType))
 
 	preparerName := e.matching[resultType]
-	result, err := e.presenter.SingleValidation(email, preparerName, nil)
+	result, err := e.presenter.Validate(email, preparerName, nil)
 	if err != nil {
 		return ResponseError(c, err)
 	}

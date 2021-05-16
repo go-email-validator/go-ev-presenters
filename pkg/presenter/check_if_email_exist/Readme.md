@@ -1,1 +1,0 @@
-Presenter for [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
