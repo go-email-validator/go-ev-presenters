@@ -37,13 +37,13 @@ var (
 	}
 )
 
-type SMTPPreparer struct{}
+type SMTPConverter struct{}
 
-func (SMTPPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ Options) bool {
+func (SMTPConverter) Can(_ evmail.Address, result ev.ValidationResult, _ Options) bool {
 	return result.ValidatorName() == ev.SMTPValidatorName
 }
 
-func (SMTPPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ Options) interface{} {
+func (SMTPConverter) Convert(_ evmail.Address, result ev.ValidationResult, _ Options) interface{} {
 	var presentation = WithoutErrsSMTPPresentation
 	var errString string
 	var errCode int

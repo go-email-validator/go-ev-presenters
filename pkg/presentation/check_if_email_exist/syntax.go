@@ -13,13 +13,13 @@ type syntaxPresentation struct {
 	IsValidSyntax bool    `json:"is_valid_syntax"`
 }
 
-type SyntaxPreparer struct{}
+type SyntaxConverter struct{}
 
-func (SyntaxPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
+func (SyntaxConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
 	return result.ValidatorName() == ev.SyntaxValidatorName
 }
 
-func (SyntaxPreparer) Prepare(email evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
+func (SyntaxConverter) Convert(email evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
 	presentation := syntaxPresentation{}
 
 	if result.IsValid() {

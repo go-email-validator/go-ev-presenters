@@ -30,7 +30,7 @@ func DefaultUnmarshal(c *fiber.Ctx, data []byte, v interface{}) error {
 type unmarshal func(c *fiber.Ctx, data []byte, v interface{}) error
 
 type EmailValidationApiControllerDTO struct {
-	Presenter     presentation.MultiplePresenter
+	Presenter     presentation.ValidationPresenter
 	Matching      map[openapi.ResultType]converter.Name
 	JsonUnmarshal unmarshal
 	// MatchingResponse needs to juxtapose with openapi.EmailResponse
@@ -52,7 +52,7 @@ func NewEmailValidationApiController(dto EmailValidationApiControllerDTO) openap
 
 // A emailValidationApiController binds http requests to an api service and writes the service results to the http response
 type emailValidationApiController struct {
-	presenter        presentation.MultiplePresenter
+	presenter        presentation.ValidationPresenter
 	matching         map[openapi.ResultType]converter.Name
 	matchingResponse map[converter.Name]string
 	unmarshal        unmarshal
@@ -116,12 +116,12 @@ func (e *emailValidationApiController) EmailValidationSingleValidationPost(c *fi
 		}),*/
 	}
 
-	preparerName := e.matching[body.ResultType]
-	result, err := e.presenter.Validate(body.Email, preparerName, opts)
+	converterName := e.matching[body.ResultType]
+	result, err := e.presenter.Validate(body.Email, converterName, opts)
 	if err != nil {
 		return ResponseError(c, err)
 	}
-	return c.JSON(e.preparePresenter(preparerName, result))
+	return c.JSON(e.preparePresenter(converterName, result))
 }
 
 var defaultResultType = string(openapi.CIEE)
@@ -133,11 +133,11 @@ func (e *emailValidationApiController) EmailValidationSingleValidationGet(c *fib
 	}
 	resultType := openapi.ResultType(c.Query("result_type", defaultResultType))
 
-	preparerName := e.matching[resultType]
-	result, err := e.presenter.Validate(email, preparerName, nil)
+	converterName := e.matching[resultType]
+	result, err := e.presenter.Validate(email, converterName, nil)
 	if err != nil {
 		return ResponseError(c, err)
 	}
 
-	return c.JSON(e.preparePresenter(preparerName, result))
+	return c.JSON(e.preparePresenter(converterName, result))
 }

@@ -29,32 +29,32 @@ func (o options) ExecutedTime() time.Duration {
 }
 
 type Interface interface {
-	CanPrepare(email evmail.Address, result ev.ValidationResult, opts Options) bool
-	Prepare(email evmail.Address, result ev.ValidationResult, opts Options) interface{}
+	Can(email evmail.Address, result ev.ValidationResult, opts Options) bool
+	Convert(email evmail.Address, result ev.ValidationResult, opts Options) interface{}
 }
 
-type MapPreparers map[ev.ValidatorName]Interface
+type MapConverters map[ev.ValidatorName]Interface
 
-func NewMultiplePreparer(preparers MapPreparers) MultiplePreparer {
-	return MultiplePreparer{preparers}
+func NewCompositeConverter(converters MapConverters) CompositeConverter {
+	return CompositeConverter{converters}
 }
 
-type MultiplePreparer struct {
-	preparers MapPreparers
+type CompositeConverter struct {
+	converters MapConverters
 }
 
-func (p MultiplePreparer) preparer(email evmail.Address, result ev.ValidationResult, opts Options) Interface {
-	if preparer, ok := p.preparers[result.ValidatorName()]; ok && preparer.CanPrepare(email, result, opts) {
-		return preparer
+func (p CompositeConverter) converter(email evmail.Address, result ev.ValidationResult, opts Options) Interface {
+	if converter, ok := p.converters[result.ValidatorName()]; ok && converter.Can(email, result, opts) {
+		return converter
 	}
 
 	return nil
 }
 
-func (p MultiplePreparer) CanPrepare(email evmail.Address, result ev.ValidationResult, opts Options) bool {
-	return p.preparer(email, result, opts) != nil
+func (p CompositeConverter) Can(email evmail.Address, result ev.ValidationResult, opts Options) bool {
+	return p.converter(email, result, opts) != nil
 }
 
-func (p MultiplePreparer) Prepare(email evmail.Address, result ev.ValidationResult, opts Options) interface{} {
-	return p.preparer(email, result, opts).Prepare(email, result, opts)
+func (p CompositeConverter) Convert(email evmail.Address, result ev.ValidationResult, opts Options) interface{} {
+	return p.converter(email, result, opts).Convert(email, result, opts)
 }

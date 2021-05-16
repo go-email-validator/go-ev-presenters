@@ -10,12 +10,12 @@ type disposablePresentation struct {
 	IsDisposable bool `json:"is_disposable"`
 }
 
-type disposablePreparer struct{}
+type disposableConverter struct{}
 
-func (disposablePreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
+func (disposableConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
 	return result.ValidatorName() == ev.DisposableValidatorName
 }
 
-func (disposablePreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
+func (disposableConverter) Convert(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
 	return disposablePresentation{!result.IsValid()}
 }

@@ -10,12 +10,12 @@ type rolePresentation struct {
 	IsRoleAccount bool `json:"is_role_account"`
 }
 
-type rolePreparer struct{}
+type roleConverter struct{}
 
-func (rolePreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
+func (roleConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
 	return result.ValidatorName() == ev.RoleValidatorName
 }
 
-func (rolePreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
+func (roleConverter) Convert(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
 	return rolePresentation{!result.IsValid()}
 }

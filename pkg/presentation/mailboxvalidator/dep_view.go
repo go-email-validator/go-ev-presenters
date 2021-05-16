@@ -47,25 +47,25 @@ func ToBool(value string) bool {
 	return value == MBVTrue
 }
 
-func NewDepPreparerForViewDefault() DepPreparerForView {
-	return NewDepPreparerForView(NewDepPreparerDefault())
+func NewDepConverterForViewDefault() DepConverterForView {
+	return NewDepConverterForView(NewDepConverterDefault())
 }
 
-func NewDepPreparerForView(preparer DepPreparer) DepPreparerForView {
-	return DepPreparerForView{preparer}
+func NewDepConverterForView(depConverter DepConverter) DepConverterForView {
+	return DepConverterForView{depConverter}
 }
 
-type DepPreparerForView struct {
-	d DepPreparer
+type DepConverterForView struct {
+	d DepConverter
 }
 
-func (d DepPreparerForView) CanPrepare(email evmail.Address, result ev.ValidationResult, opts converter.Options) bool {
-	return d.d.CanPrepare(email, result, opts)
+func (d DepConverterForView) Can(email evmail.Address, result ev.ValidationResult, opts converter.Options) bool {
+	return d.d.Can(email, result, opts)
 }
 
 // TODO add processing of "-" in mailbox validator, for example zxczxczxc@joycasinoru
-func (d DepPreparerForView) Prepare(email evmail.Address, resultInterface ev.ValidationResult, opts converter.Options) interface{} {
-	depPresentation := d.d.Prepare(email, resultInterface, opts).(DepPresentation)
+func (d DepConverterForView) Convert(email evmail.Address, resultInterface ev.ValidationResult, opts converter.Options) interface{} {
+	depPresentation := d.d.Convert(email, resultInterface, opts).(DepPresentation)
 
 	return DepPresentationForView{
 		EmailAddress:          depPresentation.EmailAddress,

@@ -11,13 +11,13 @@ type mxPresentation struct {
 	Records     []string `json:"records"`
 }
 
-type mxPreparer struct{}
+type mxConverter struct{}
 
-func (mxPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
+func (mxConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
 	return result.ValidatorName() == ev.MXValidatorName
 }
 
-func (mxPreparer) Prepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
+func (mxConverter) Convert(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
 	mxResult := result.(ev.MXValidationResult)
 	lenMX := len(mxResult.MX())
 	records := make([]string, lenMX)

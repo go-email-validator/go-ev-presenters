@@ -33,27 +33,27 @@ type DepPresentation struct {
 	Message        string `json:"message"`
 }
 
-func NewDepPreparerDefault() DepPreparer {
-	return NewDepPreparer()
+func NewDepConverterDefault() DepConverter {
+	return NewDepConverter()
 }
 
-func NewDepPreparer() DepPreparer {
-	return DepPreparer{}
+func NewDepConverter() DepConverter {
+	return DepConverter{}
 }
 
-type DepPreparer struct{}
+type DepConverter struct{}
 
-func (DepPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
+func (DepConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
 	return result.ValidatorName() == ev.DepValidatorName
 }
 
-func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.ValidationResult, _ converter.Options) (result interface{}) {
+func (d DepConverter) Convert(email evmail.Address, resultInterface ev.ValidationResult, _ converter.Options) (result interface{}) {
 	var message string
 	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()
 	mxResult := validationResults[ev.MXValidatorName].(ev.MXValidationResult)
 
-	smtpPresentation := converter.SMTPPreparer{}.Prepare(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
+	smtpPresentation := converter.SMTPConverter{}.Convert(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
 
 	Email := email.String()
 	isSyntaxValid := validationResults[ev.SyntaxValidatorName].IsValid()

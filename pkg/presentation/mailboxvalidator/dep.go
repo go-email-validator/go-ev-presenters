@@ -50,23 +50,23 @@ type DepPresentation struct {
 
 type FuncCalculateScore func(presentation DepPresentation) float64
 
-func NewDepPreparerDefault() DepPreparer {
-	return NewDepPreparer(CalculateScore)
+func NewDepConverterDefault() DepConverter {
+	return NewDepConverter(CalculateScore)
 }
 
-func NewDepPreparer(calculateScore FuncCalculateScore) DepPreparer {
-	return DepPreparer{calculateScore}
+func NewDepConverter(calculateScore FuncCalculateScore) DepConverter {
+	return DepConverter{calculateScore}
 }
 
-type DepPreparer struct {
+type DepConverter struct {
 	calculateScore FuncCalculateScore
 }
 
-func (DepPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, opts converter.Options) bool {
+func (DepConverter) Can(_ evmail.Address, result ev.ValidationResult, opts converter.Options) bool {
 	return opts.ExecutedTime() != 0 && result.ValidatorName() == ev.DepValidatorName
 }
 
-func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.ValidationResult, opts converter.Options) (result interface{}) {
+func (d DepConverter) Convert(email evmail.Address, resultInterface ev.ValidationResult, opts converter.Options) (result interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			result = DepPresentation{
@@ -86,7 +86,7 @@ func (d DepPreparer) Prepare(email evmail.Address, resultInterface ev.Validation
 	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()
 
-	smtpPresentation := converter.SMTPPreparer{}.Prepare(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
+	smtpPresentation := converter.SMTPConverter{}.Convert(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
 
 	isFree := !validationResults[ev.FreeValidatorName].IsValid()
 	isSyntax := validationResults[ev.SyntaxValidatorName].IsValid()

@@ -171,8 +171,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestServer_HTTP(t *testing.T) {
-	getPresenter = func(_ evsmtp.CheckerDTO, _ Options) presentation.MultiplePresenter {
-		return presentation.NewMultiplePresenter(valuePresenters)
+	getPresenter = func(_ evsmtp.CheckerDTO, _ Options) presentation.ValidationPresenter {
+		return presentation.NewValidationPresenter(valuePresenters)
 	}
 	server, opts := startServer(nil)
 	defer reset()

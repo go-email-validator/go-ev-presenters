@@ -29,44 +29,44 @@ type DepPresentation struct {
 
 type FuncAvailability func(depPresentation DepPresentation) Availability
 
-func NewDepPreparerDefault() DepPreparer {
-	return NewDepPreparer(
-		converter.NewMultiplePreparer(converter.MapPreparers{
-			ev.RoleValidatorName:       rolePreparer{},
-			ev.DisposableValidatorName: disposablePreparer{},
-			ev.MXValidatorName:         mxPreparer{},
-			ev.SMTPValidatorName:       converter.SMTPPreparer{},
-			ev.SyntaxValidatorName:     SyntaxPreparer{},
+func NewDepConverterDefault() DepConverter {
+	return NewDepConverter(
+		converter.NewCompositeConverter(converter.MapConverters{
+			ev.RoleValidatorName:       roleConverter{},
+			ev.DisposableValidatorName: disposableConverter{},
+			ev.MXValidatorName:         mxConverter{},
+			ev.SMTPValidatorName:       converter.SMTPConverter{},
+			ev.SyntaxValidatorName:     SyntaxConverter{},
 		}),
 		CalculateAvailability,
 	)
 }
 
-func NewDepPreparer(preparer converter.MultiplePreparer, calculateAvailability FuncAvailability) DepPreparer {
-	return DepPreparer{preparer, calculateAvailability}
+func NewDepConverter(converter converter.CompositeConverter, calculateAvailability FuncAvailability) DepConverter {
+	return DepConverter{converter, calculateAvailability}
 }
 
-type DepPreparer struct {
-	preparer              converter.MultiplePreparer
+type DepConverter struct {
+	converter             converter.CompositeConverter
 	calculateAvailability FuncAvailability
 }
 
-func (DepPreparer) CanPrepare(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
+func (DepConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
 	return result.ValidatorName() == ev.DepValidatorName
 }
 
-func (s DepPreparer) Prepare(email evmail.Address, result ev.ValidationResult, opts converter.Options) interface{} {
+func (s DepConverter) Convert(email evmail.Address, result ev.ValidationResult, opts converter.Options) interface{} {
 	depPresentation := DepPresentation{
 		Input: email.String(),
 		Misc:  miscPresentation{},
 	}
 
 	for _, validatorResult := range result.(ev.DepValidationResult).GetResults() {
-		if !s.preparer.CanPrepare(email, validatorResult, opts) {
+		if !s.converter.Can(email, validatorResult, opts) {
 			continue
 		}
 
-		switch v := s.preparer.Prepare(email, validatorResult, opts).(type) {
+		switch v := s.converter.Convert(email, validatorResult, opts).(type) {
 		case rolePresentation:
 			depPresentation.Misc.rolePresentation = v
 		case disposablePresentation:

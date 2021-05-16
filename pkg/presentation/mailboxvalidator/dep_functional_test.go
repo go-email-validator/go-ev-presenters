@@ -14,11 +14,11 @@ func TestMain(m *testing.M) {
 	evtests.TestMain(m)
 }
 
-func TestDepPreparer_Functional_Prepare(t *testing.T) {
+func TestDepConverter_Functional_Convert(t *testing.T) {
 	evtests.FunctionalSkip(t)
 
 	validator := NewDepValidator(nil)
-	d := NewDepPreparerDefault()
+	d := NewDepConverterDefault()
 
 	tests := detPresenters(t)
 
@@ -50,8 +50,8 @@ func TestDepPreparer_Functional_Prepare(t *testing.T) {
 			opts := converter.NewOptions(tt.TimeTaken)
 
 			resultValidator := validator.Validate(ev.NewInput(email))
-			if gotResult := d.Prepare(email, resultValidator, opts); !reflect.DeepEqual(gotResult, tt) {
-				t.Errorf("Prepare()\n%#v, \n want\n%#v", gotResult, tt)
+			if gotResult := d.Convert(email, resultValidator, opts); !reflect.DeepEqual(gotResult, tt) {
+				t.Errorf("Convert()\n%#v, \n want\n%#v", gotResult, tt)
 			}
 		})
 	}

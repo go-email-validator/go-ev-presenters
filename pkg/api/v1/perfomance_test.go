@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ Options) presentation.MultiplePresenter {
+func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ Options) presentation.ValidationPresenter {
 	ctrl := gomock.NewController(b)
 	defer ctrl.Finish()
 
@@ -67,11 +67,11 @@ func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ 
 		smtpValidator,
 	).Build()
 
-	return presentation.NewMultiplePresenter(map[converter.Name]presentation.Interface{
+	return presentation.NewValidationPresenter(map[converter.Name]presentation.Interface{
 		check_if_email_exist.Name: presentation.NewPresenter(
 			evmail.FromString,
 			validator,
-			check_if_email_exist.NewDepPreparerDefault(),
+			check_if_email_exist.NewDepConverterDefault(),
 		),
 	})
 }
@@ -79,7 +79,7 @@ func newMultiplePresentersDefault(b *testing.B, checkerDTO evsmtp.CheckerDTO, _ 
 func BenchmarkServer(b *testing.B) {
 	runtime.GOMAXPROCS(1) // Use only wan processor
 
-	getPresenter = func(checkerDTO evsmtp.CheckerDTO, opts Options) presentation.MultiplePresenter {
+	getPresenter = func(checkerDTO evsmtp.CheckerDTO, opts Options) presentation.ValidationPresenter {
 		return newMultiplePresentersDefault(b, checkerDTO, opts)
 	}
 

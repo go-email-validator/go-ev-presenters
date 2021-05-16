@@ -20,7 +20,7 @@ func TestDepConverter_Convert(t *testing.T) {
 	evtests.FunctionalSkip(t)
 
 	validator := NewDepValidator(nil)
-	d := NewDepPreparerDefault()
+	d := NewDepConverterDefault()
 
 	tests := make([]DepPresentation, 0)
 	presentation_test.TestDepPresentations(t, &tests, "")
@@ -54,13 +54,13 @@ func TestDepConverter_Convert(t *testing.T) {
 			email := evmail.FromString(tt.Input)
 
 			resultValidator := validator.Validate(ev.NewInput(email))
-			got := d.Prepare(email, resultValidator, opts)
+			got := d.Convert(email, resultValidator, opts)
 			gotPresenter := got.(DepPresentation)
 
 			sort.Strings(gotPresenter.MX.Records)
 			sort.Strings(tt.MX.Records)
 			if !reflect.DeepEqual(got, tt) {
-				t.Errorf("Prepare()\n%#v, \n want\n%#v", got, tt)
+				t.Errorf("Convert()\n%#v, \n want\n%#v", got, tt)
 			}
 		})
 	}

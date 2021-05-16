@@ -9,11 +9,11 @@ import (
 	"time"
 )
 
-type MultiplePresenter interface {
+type ValidationPresenter interface {
 	Validate(email string, name converter.Name, opts map[ev.ValidatorName]interface{}) (interface{}, error)
 }
 
-func NewMultiplePresenter(presenters map[converter.Name]Interface) MultiplePresenter {
+func NewValidationPresenter(presenters map[converter.Name]Interface) ValidationPresenter {
 	return multiplePresenter{presenters: presenters}
 }
 
@@ -63,5 +63,5 @@ func (p presenter) ValidateFromAddress(address evmail.Address, opts map[ev.Valid
 	validationResult := p.validator.Validate(ev.NewInputFromMap(address, opts))
 	elapsed := time.Since(start)
 
-	return p.converter.Prepare(address, validationResult, converter.NewOptions(elapsed)), nil
+	return p.converter.Convert(address, validationResult, converter.NewOptions(elapsed)), nil
 }

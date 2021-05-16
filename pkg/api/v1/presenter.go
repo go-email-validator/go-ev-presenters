@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) presentation.MultiplePresenter {
+func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) presentation.ValidationPresenter {
 	var cache CacheInterface
 
 	withMemcached := len(opts.Validator.Memcached) > 0
@@ -68,21 +68,21 @@ func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) pr
 		smtpValidator = cache.Validator(smtpValidator)
 	}
 
-	return presentation.NewMultiplePresenter(map[converter.Name]presentation.Interface{
+	return presentation.NewValidationPresenter(map[converter.Name]presentation.Interface{
 		check_if_email_exist.Name: presentation.NewPresenter(
 			evmail.FromString,
 			check_if_email_exist.NewDepValidator(smtpValidator),
-			check_if_email_exist.NewDepPreparerDefault(),
+			check_if_email_exist.NewDepConverterDefault(),
 		),
 		mailboxvalidator.Name: presentation.NewPresenter(
 			mailboxvalidator.EmailFromString,
 			mailboxvalidator.NewDepValidator(smtpValidator),
-			mailboxvalidator.NewDepPreparerForViewDefault(),
+			mailboxvalidator.NewDepConverterForViewDefault(),
 		),
 		prompt_email_verification_api.Name: presentation.NewPresenter(
 			prompt_email_verification_api.EmailFromString,
 			prompt_email_verification_api.NewDepValidator(smtpValidator),
-			prompt_email_verification_api.NewDepPreparerDefault(),
+			prompt_email_verification_api.NewDepConverterDefault(),
 		),
 	})
 }
