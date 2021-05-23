@@ -37,6 +37,16 @@ var (
 	}
 )
 
+var smtpConverter *SMTPConverter
+
+func NewSMTPConverter() *SMTPConverter {
+	if smtpConverter == nil {
+		smtpConverter = &SMTPConverter{}
+	}
+
+	return smtpConverter
+}
+
 type SMTPConverter struct{}
 
 func (SMTPConverter) Can(_ evmail.Address, result ev.ValidationResult, _ Options) bool {

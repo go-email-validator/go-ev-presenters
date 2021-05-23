@@ -27,7 +27,10 @@ type DepPresentation struct {
 	Error       string             `json:"error"`
 }
 
-type FuncAvailability func(depPresentation DepPresentation) Availability
+type DepConverter struct {
+	converter             converter.CompositeConverter
+	calculateAvailability FuncAvailability
+}
 
 func NewDepConverterDefault() DepConverter {
 	return NewDepConverter(
@@ -35,7 +38,7 @@ func NewDepConverterDefault() DepConverter {
 			ev.RoleValidatorName:       roleConverter{},
 			ev.DisposableValidatorName: disposableConverter{},
 			ev.MXValidatorName:         mxConverter{},
-			ev.SMTPValidatorName:       converter.SMTPConverter{},
+			ev.SMTPValidatorName:       converter.NewSMTPConverter(),
 			ev.SyntaxValidatorName:     SyntaxConverter{},
 		}),
 		CalculateAvailability,
@@ -44,11 +47,6 @@ func NewDepConverterDefault() DepConverter {
 
 func NewDepConverter(converter converter.CompositeConverter, calculateAvailability FuncAvailability) DepConverter {
 	return DepConverter{converter, calculateAvailability}
-}
-
-type DepConverter struct {
-	converter             converter.CompositeConverter
-	calculateAvailability FuncAvailability
 }
 
 func (DepConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {

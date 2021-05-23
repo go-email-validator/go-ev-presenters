@@ -8,6 +8,7 @@ import (
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evmail"
 	"github.com/go-email-validator/go-email-validator/pkg/ev/evsmtp"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presentation"
+	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/as_email_verifier"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/check_if_email_exist"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/converter"
 	"github.com/go-email-validator/go-ev-presenters/pkg/presentation/mailboxvalidator"
@@ -69,6 +70,11 @@ func NewMultiplePresentersDefault(checkerDTO evsmtp.CheckerDTO, opts Options) pr
 	}
 
 	return presentation.NewValidationPresenter(map[converter.Name]presentation.Interface{
+		as_email_verifier.Name: presentation.NewPresenter(
+			evmail.FromString,
+			as_email_verifier.NewDepValidator(smtpValidator),
+			as_email_verifier.NewDepConverterDefault(),
+		),
 		check_if_email_exist.Name: presentation.NewPresenter(
 			evmail.FromString,
 			check_if_email_exist.NewDepValidator(smtpValidator),

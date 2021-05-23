@@ -86,7 +86,7 @@ func (d DepConverter) Convert(email evmail.Address, resultInterface ev.Validatio
 	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()
 
-	smtpPresentation := converter.SMTPConverter{}.Convert(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
+	smtpPresentation := converter.NewSMTPConverter().Convert(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
 
 	isFree := !validationResults[ev.FreeValidatorName].IsValid()
 	isSyntax := validationResults[ev.SyntaxValidatorName].IsValid()

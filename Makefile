@@ -8,11 +8,25 @@ USER_ID=`id -u`
 USER_GROUP=`id -g`
 
 VERSION_PATH := go-email-validator@v0.0.0-20210126185018-3b48def577e4
-MOUNT_PATH := `go env GOMODCACHE`/github.com/go-email-validator/
+
+GITHUB_VENDOR := /github.com/go-email-validator/
+
+MOUNT_PATH := `go env GOMODCACHE`$(GITHUB_VENDOR)
 mount:
 	rm -fr $(MOUNT_PATH)$(VERSION_PATH)
 	mkdir -p $(MOUNT_PATH)$(VERSION_PATH)
 	sudo mount -Br ~/go/src/github.com/go-email-validator/go-email-validator/ $(MOUNT_PATH)$(VERSION_PATH)
+
+GO_1_15_6 := /home/qz/go/go1.15.6
+GO_1_15_6_PATH := $(GO_1_15_6)/src$(GITHUB_VENDOR)
+
+mount.go.1.15.6: umount.go.1.15.6
+	rm -fr $(GO_1_15_6_PATH)
+	mkdir -p $(GO_1_15_6_PATH)
+	sudo mount -Br ~/go/src/github.com/go-email-validator/ $(GO_1_15_6_PATH)
+
+umount.go.1.15.6:
+	sudo umount $(GO_1_15_6_PATH) -q | exit 0
 
 go.build:
 	go build ./pkg/...
@@ -75,7 +89,7 @@ docker.push.latest:
 	docker push $(DOCKER_USER)/$(IMAGE):latest
 
 
-HEROKU_APP_NAME=evapi
+HEROKU_APP_NAME=ev-eu
 
 heroku.docker: heroku.docker.web heroku.docker.tor
 
