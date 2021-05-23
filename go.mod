@@ -12,7 +12,6 @@ require (
 	github.com/getkin/kin-openapi v0.36.0
 	github.com/go-email-validator/go-email-validator v0.0.0-20210523140307-54e1e9a9c7ff
 	github.com/go-openapi/swag v0.19.13 // indirect
-	github.com/go-redis/redis/v7 v7.4.0 // indirect
 	github.com/gofiber/fiber/v2 v2.3.3
 	github.com/golang/mock v1.5.0
 	github.com/klauspost/compress v1.11.7 // indirect

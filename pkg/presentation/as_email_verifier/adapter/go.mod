@@ -4,5 +4,4 @@ go 1.15
 
 require (
 	github.com/AfterShip/email-verifier v1.0.3
-
 )
