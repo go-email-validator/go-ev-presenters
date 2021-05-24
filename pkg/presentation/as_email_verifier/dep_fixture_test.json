@@ -133,8 +133,8 @@
       "disabled": false
     },
     "gravatar": {
-      "HasGravatar": true,
-      "GravatarUrl": "https://www.gravatar.com/avatar/c5f055c2f3f1352b05fcbaf5a4b379ac"
+      "HasGravatar": false,
+      "GravatarUrl": ""
     },
     "suggestion": ""
   },
@@ -206,8 +206,8 @@
       "disabled": false
     },
     "gravatar": {
-      "HasGravatar": true,
-      "GravatarUrl": "https://www.gravatar.com/avatar/ee9346e3b5d7cafa7056a9a7afd3b3df"
+      "HasGravatar": false,
+      "GravatarUrl": ""
     },
     "suggestion": ""
   },
@@ -248,8 +248,17 @@
       "valid": true
     },
     "has_mx_records": true,
-    "smtp": null,
-    "gravatar": null,
+    "smtp": {
+      "host_exists": true,
+      "full_inbox": false,
+      "catch_all": true,
+      "deliverable": false,
+      "disabled": false
+    },
+    "gravatar": {
+      "HasGravatar": false,
+      "GravatarUrl": ""
+    },
     "suggestion": ""
   },
   {
@@ -272,12 +281,27 @@
       "disabled": false
     },
     "gravatar": {
-      "HasGravatar": true,
-      "GravatarUrl": "https://www.gravatar.com/avatar/7fd4ff3b913a4e1f69cd37fee0c073b5"
+      "HasGravatar": false,
+      "GravatarUrl": ""
     },
     "suggestion": ""
   },
-  null,
+  {
+    "email": "salestrade86@hotmail.com",
+    "disposable": false,
+    "reachable": "unknown",
+    "role_account": false,
+    "free": true,
+    "syntax": {
+      "username": "salestrade86",
+      "domain": "hotmail.com",
+      "valid": true
+    },
+    "has_mx_records": true,
+    "smtp": null,
+    "gravatar": null,
+    "suggestion": ""
+  },
   {
     "email": "some.user.99@gmail.com",
     "disposable": false,
@@ -303,7 +327,22 @@
     },
     "suggestion": ""
   },
-  null,
+  {
+    "email": "monicaramirezrestrepo@hotmail.com",
+    "disposable": false,
+    "reachable": "unknown",
+    "role_account": false,
+    "free": true,
+    "syntax": {
+      "username": "monicaramirezrestrepo",
+      "domain": "hotmail.com",
+      "valid": true
+    },
+    "has_mx_records": true,
+    "smtp": null,
+    "gravatar": null,
+    "suggestion": ""
+  },
   {
     "email": "admin@gmail.com",
     "disposable": false,
@@ -324,8 +363,8 @@
       "disabled": false
     },
     "gravatar": {
-      "HasGravatar": true,
-      "GravatarUrl": "https://www.gravatar.com/avatar/75d23af433e0cea4c0e45a56dba18b30"
+      "HasGravatar": false,
+      "GravatarUrl": ""
     },
     "suggestion": ""
   },

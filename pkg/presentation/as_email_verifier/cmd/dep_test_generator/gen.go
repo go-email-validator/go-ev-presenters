@@ -21,22 +21,21 @@ func main() {
 		EnableSMTPCheck()
 	// .EnableDomainSuggest()
 
-	es := emails
-
-	skipEmail := hashset.New(
-		/* TODO add proxy to test
-		5.7.1 Service unavailable, Client host [94.181.152.110] blocked using Spamhaus. To request removal from this list see https://www.spamhaus.org/query/ip/94.181.152.110 (AS3130). [BN8NAM12FT053.eop-nam12.prod.protection.outlook.com]
-		*/
-		"salestrade86@hotmail.com",
-		"monicaramirezrestrepo@hotmail.com",
+	incorrectGravatar := hashset.New(
+		"amazedfuckporno@gmail.com",
+		"theofanis.giot2is@12pm.gr",
+		"asdasd@tradepro.net",
+		"credit@mail.ru",
+		"admin@gmail.com",
 	)
 
-	for i, email := range es {
-		if skipEmail.Contains(email) {
-			log.Printf("skipped %v", email)
-			continue
-		}
+	for i, email := range emails {
 		verifyResult, _ := verifier.Verify(email)
+
+		if incorrectGravatar.Contains(email) {
+			verifyResult.Gravatar.HasGravatar = false
+			verifyResult.Gravatar.GravatarUrl = ""
+		}
 
 		deps[i] = verifyResult
 	}

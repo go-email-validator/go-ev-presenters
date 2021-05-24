@@ -54,17 +54,10 @@ func (s DepConverter) Convert(email evmail.Address, resultInterface ev.Validatio
 	depResult := resultInterface.(ev.DepValidationResult)
 	validationResults := depResult.GetResults()
 
+	var syntax *SyntaxPresentation
+	var smtp *SmtpPresentation
+	var gravatar *GravatarPresentation
 	mxResult := validationResults[ev.MXValidatorName].(ev.MXValidationResult)
-
-	depPresentation := DepPresentation{
-		Email:        email.String(),
-		Disposable:   validationResults[ev.DisposableValidatorName].IsValid(),
-		RoleAccount:  validationResults[ev.RoleValidatorName].IsValid(),
-		Free:         validationResults[ev.FreeValidatorName].IsValid(),
-		HasMxRecords: len(mxResult.MX()) > 0,
-		Suggestion:   "", // TODO need to resolve
-	}
-
 	for _, validatorResult := range depResult.GetResults() {
 		if !s.converter.Can(email, validatorResult, opts) {
 			continue
@@ -72,20 +65,54 @@ func (s DepConverter) Convert(email evmail.Address, resultInterface ev.Validatio
 
 		switch v := s.converter.Convert(email, validatorResult, opts).(type) {
 		case *SyntaxPresentation:
-			depPresentation.Syntax = v
+			syntax = v
 		case converter.SmtpPresentation:
-			depPresentation.SMTP = &SmtpPresentation{
+			smtp = &SmtpPresentation{
 				HostExists:  v.CanConnectSmtp,
 				FullInbox:   v.HasFullInbox,
 				CatchAll:    v.IsCatchAll,
-				Deliverable: v.IsDeliverable,
+				Deliverable: !v.IsCatchAll && v.IsDeliverable,
 				Disabled:    v.IsDisabled,
 			}
 		case *GravatarPresentation:
-			depPresentation.Gravatar = v
+			gravatar = v
 		}
 	}
+
+	depPresentation := DepPresentation{
+		Email:     email.String(),
+		Reachable: ReachableUnknown,
+		Syntax:    syntax,
+	}
+
+	if syntax == nil || !syntax.Valid {
+		return depPresentation
+	}
+
+	depPresentation.Free = !validationResults[ev.FreeValidatorName].IsValid()
+	depPresentation.RoleAccount = !validationResults[ev.RoleValidatorName].IsValid()
+	depPresentation.Disposable = !validationResults[ev.DisposableValidatorName].IsValid()
+
+	if depPresentation.Disposable {
+		return depPresentation
+	}
+
+	if !mxResult.IsValid() {
+		return depPresentation
+	}
+
+	depPresentation.HasMxRecords = len(mxResult.MX()) > 0
+
+	if smtp == nil || !smtp.HostExists {
+		return depPresentation
+	}
+
+	depPresentation.SMTP = smtp
 	depPresentation.Reachable = s.calculateReachable(depPresentation)
+
+	if gravatar != nil {
+		depPresentation.Gravatar = gravatar
+	}
 
 	return depPresentation
 }
@@ -101,5 +128,7 @@ func NewDepValidator(smtpValidator ev.Validator) ev.Validator {
 		ev.NewSyntaxRegexValidator(regexp.MustCompile(EmailRegexString)),
 	).
 		Set(ev.GravatarValidatorName, ev.NewGravatarValidator()).
-		Set(ev.SMTPValidatorName, smtpValidator).Build()
+		Set(ev.SMTPValidatorName, smtpValidator).
+		Set(ev.FreeValidatorName, ev.FreeDefaultValidator()).
+		Build()
 }

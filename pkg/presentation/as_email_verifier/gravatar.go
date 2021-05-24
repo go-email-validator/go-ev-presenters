@@ -14,12 +14,12 @@ type GravatarPresentation struct {
 type GravatarConverter struct{}
 
 func (GravatarConverter) Can(_ evmail.Address, result ev.ValidationResult, _ converter.Options) bool {
-	return result.ValidatorName() == ev.SyntaxValidatorName
+	return result.ValidatorName() == ev.GravatarValidatorName
 }
 
-func (GravatarConverter) Convert(email evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
+func (GravatarConverter) Convert(_ evmail.Address, result ev.ValidationResult, _ converter.Options) interface{} {
 	gravatarResult := result.(ev.GravatarValidationResult)
-	presentation := GravatarPresentation{HasGravatar: gravatarResult.IsValid()}
+	presentation := &GravatarPresentation{HasGravatar: gravatarResult.IsValid()}
 
 	if presentation.HasGravatar {
 		presentation.GravatarUrl = gravatarResult.URL()
