@@ -1,5 +1,7 @@
 package check_if_email_exist
 
+type FuncAvailability func(depPresentation DepPresentation) Availability
+
 type Availability string
 
 func (a Availability) String() string {

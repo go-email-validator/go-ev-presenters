@@ -53,7 +53,7 @@ func (d DepConverter) Convert(email evmail.Address, resultInterface ev.Validatio
 	validationResults := depResult.GetResults()
 	mxResult := validationResults[ev.MXValidatorName].(ev.MXValidationResult)
 
-	smtpPresentation := converter.SMTPConverter{}.Convert(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
+	smtpPresentation := converter.NewSMTPConverter().Convert(email, validationResults[ev.SMTPValidatorName], nil).(converter.SmtpPresentation)
 
 	Email := email.String()
 	isSyntaxValid := validationResults[ev.SyntaxValidatorName].IsValid()
